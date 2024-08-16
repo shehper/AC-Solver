@@ -24,42 +24,55 @@ from gymnasium.spaces import Discrete, Box
 # TODO: fix indentation. Why is it half as usual here?
 # computes number of nonzero elements of a Numpy array
 def len_words(relators):
-    """ 
-    
-    """
+    # TODO: this function should be removed.
     return np.count_nonzero(relators)
 
 
-# Removes neighboring inverses (e.g. xyy^{-1} --> x)
-# If full=True, also removes inverses that appear on opposite sides of a relation. (e.g. yxy^{-1}--> x)
-def simplify(rel, nrel, full=False, padded=True):
-    rel_len = len_words(rel)
-    i = 0
-    while i < rel_len - 1:
-        if rel[i] != -rel[i + 1]:
-            i += 1
+def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
+    """
+    Simplifies a relator by removing neighboring inverses, e.g. [2, 1, -1, 2, 0] --> [2, 2, 0, 0, 0].
+    If cyclical=True, it also removes inverses that appear on opposite ends of a relator, e.g. [2, 1, -2] --> [1].
+    If padded = True, pad the 
+    """
+    
+    assert isinstance(relator, np.ndarray), "expect relator to be a numpy array"
+
+    # number of nonzero entries
+    relator_length = np.count_nonzero(relator)
+    if len(relator) > relator_length:
+        assert relator[relator_length:] == 0, "expect all zeros to be at the right end"
+    
+    # loop over the array and remove inverses
+    pos = 0
+    while pos < relator_length - 1:
+        if relator[pos] == - relator[pos + 1]:
+            indices_to_remove = np.array([pos, pos + 1])
+            relator = np.delete(relator, indices_to_remove)
+            relator_length -= 2
+            if pos:
+                pos -= 1
         else:
-            rel = np.delete(rel, np.array([i, i + 1]), None)
-            rel_len -= 2
-            # Subtract 1 from i unless it is already 0.
-            if i:
-                i -= 1
+            pos += 1
 
-    if full:
-        i = 0
-        while rel[i] == -rel[rel_len - 1 - i]:
-            i += 1
-        if i:
-            rel = np.delete(
-                rel, list(np.arange(i)) + list(rel_len - 1 - np.arange(i)), None
+    # if cyclical, also remove inverses from the opposite ends
+    if cyclical:
+        pos = 0
+        while relator[pos] == -relator[relator_length - pos - 1]:
+            pos += 1
+        if pos:
+            indices_to_remove = np.concatenate([np.arange(pos), relator_length - 1 - np.arange(pos)])
+            relator = np.delete(
+                relator, indices_to_remove
             )
-            rel_len -= 2 * i
+            relator_length -= 2 * pos
 
-    assert nrel >= len(
-        rel
-    ), "Increase max length! Word length is bigger than maximum allowed length."
+    # if padded, pad zeros to the right so that the output array has length = max_relator_length
+    if padded:
+        relator = np.pad(relator, (0, max_relator_length - len(relator)))
 
-    return (np.pad(rel, (0, nrel - len(rel))), rel_len) if padded else rel
+    assert max_relator_length >= relator_length, "Increase max length! Word length is bigger than maximum allowed length."
+
+    return  relator, relator_length
 
 
 # Simplifies each relator in a list of relator.
@@ -68,7 +81,7 @@ def full_simplify(rels, ngen, nrel, lengths, full=True):
     lengths = lengths.copy()
 
     for i in range(ngen):
-        rels[i * nrel : (i + 1) * nrel], lengths[i] = simplify(
+        rels[i * nrel : (i + 1) * nrel], lengths[i] = simplify_relator(
             rels[i * nrel : (i + 1) * nrel], nrel, full
         )
 
