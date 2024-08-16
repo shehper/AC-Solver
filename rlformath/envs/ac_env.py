@@ -30,9 +30,25 @@ def len_words(relators):
 
 def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
     """
-    Simplifies a relator by removing neighboring inverses, e.g. [2, 1, -1, 2, 0] --> [2, 2, 0, 0, 0].
-    If cyclical=True, it also removes inverses that appear on opposite ends of a relator, e.g. [2, 1, -2] --> [1].
-    If padded = True, pad the 
+    Simplifies a relator by removing neighboring inverses. For example, if input is x^2 y y^{-1} x, the output will be x^3. 
+    
+    Parameters:
+    relator (numpy array): An array representing a word of generators.
+                           Expected form is to have non-zero elements to the left and any padded zeros to the right.
+                           For example, [-1, -1, 2, 2, 1, 0, 0] represents the word x^{-2} y^2 x
+    max_relator_length (int): An integer that is the upper bound on the length of the simplified relator.
+                              If, after simplification, the relator length > max_relator_length, an assertion error is given.
+                              This bound is placed so as to make the search space finite. Say, 
+    cyclical (bool): A bool to specify whether to remove inverses on opposite ends of the relator. 
+                     For example, when true, the function will reduce x y x^{-1} to y.
+                     This is equivalent to conjugation by a word.
+    padded (bool): A bool to specify whether to pad the output with zeros on the right end.
+                   If True, the output array has length = max_relator_length, with number of padded zeros
+                   equal to the difference of max_relator_length and word length of the simplified relator.
+
+
+    Returns: (simplified_relator, relator_length)
+    simplified_relator is the simplified relator, and relator_length is the length of this word.
     """
     
     assert isinstance(relator, np.ndarray), "expect relator to be a numpy array"
@@ -46,7 +62,7 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
     pos = 0
     while pos < relator_length - 1:
         if relator[pos] == - relator[pos + 1]:
-            indices_to_remove = np.array([pos, pos + 1])
+            indices_to_remove = [pos, pos + 1]
             relator = np.delete(relator, indices_to_remove)
             relator_length -= 2
             if pos:
