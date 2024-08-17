@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from rlformath.envs.ac_env import simplify_relator
+from rlformath.envs.ac_env import simplify_relator, is_presentation_valid
 
 # Parameterized tests
 @pytest.mark.parametrize(
@@ -61,6 +61,25 @@ def test_simplify_relator(relator, max_relator_length, cyclical, padded, expecte
         when relator = {relator}, max length = {max_relator_length}, cyclical = {cyclical}, padded = {padded}"
     assert result[1] == expected_length, f"Expected {expected_length}, but got {result[1]} \
         when relator = {relator}, max length = {max_relator_length}, cyclical = {cyclical}, padded = {padded}"
+
+
+@pytest.mark.parametrize(
+    "presentation, expected",
+    [
+        (np.array([1, 2, 0, 0, -2, -1, 0, 0]), True),
+        (np.array([1, 0, 2, 0, -2, -1, 0, 0]), False),
+        (np.array([0, 0, 0, 0, 0, 0, 0, 0]), False),
+        (np.array([1, 2, 3, 0, -3, -2, -1, 0]), True),
+        (np.array([1, 0, 0, 0, 0, 0, -1, 0]), False),
+        (np.array([1, 2, 0, 0, 0, -2, -1, 0]), False),
+        (np.array([]), False),
+        (np.array([1, 0, 0]), False),
+        (np.array([1, 0, 0, 0, 0, 0, 0, 0]), False),
+        (np.array([1, 2, -1, -2, 0, 0, 0, 0]), False)
+    ]
+)
+def test_is_presentation_valid(presentation, expected):
+    assert is_presentation_valid(presentation) == expected
 
 
 # def test_simplify_assertion():
