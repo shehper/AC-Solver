@@ -27,6 +27,9 @@ def len_words(relators):
     # TODO: this function should be removed.
     return np.count_nonzero(relators)
 
+# TODO: max_relator_length should be needed only in conjugate and concat, I think. 
+# TODO: lengths_of_words should not be given as a parameter anywhere. We should just compute length of word when we need to. 
+# Perhaps there can be a separate function for that. 
 
 def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
     """
@@ -36,7 +39,7 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
     relator (numpy array): An array representing a word of generators.
                            Expected form is to have non-zero elements to the left and any padded zeros to the right.
                            For example, [-1, -1, 2, 2, 1, 0, 0] represents the word x^{-2} y^2 x
-    max_relator_length (int): An integer that is the upper bound on the length of the simplified relator.
+    max_relator_length (int): Upper bound on the length of the simplified relator.
                               If, after simplification, the relator length > max_relator_length, an assertion error is given.
                               This bound is placed so as to make the search space finite. Say, 
     cyclical (bool): A bool to specify whether to remove inverses on opposite ends of the relator. 
@@ -71,7 +74,7 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
             pos += 1
 
     # if cyclical, also remove inverses from the opposite ends
-    if cyclical:
+    if cyclical and relator_length > 0:
         pos = 0
         while relator[pos] == -relator[relator_length - pos - 1]:
             pos += 1
@@ -86,48 +89,121 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
     if padded:
         relator = np.pad(relator, (0, max_relator_length - len(relator)))
 
-    assert max_relator_length >= relator_length, "Increase max length! Word length is bigger than maximum allowed length."
+    assert max_relator_length >= relator_length, "Increase max length! Length of simplified word \
+                                                  is bigger than maximum allowed length."
 
     return  relator, relator_length
 
 
 # Simplifies each relator in a list of relator.
-def full_simplify(rels, ngen, nrel, lengths, full=True):
-    rels = np.array(rels)
-    lengths = lengths.copy()
+def simplify_presentation(presentation, max_relator_length, lengths_of_words, cyclical=True):
+    """ 
+    Simplifies a presentation by simplifying each of its relators. (See `simplify_relator` for more details.)
 
-    for i in range(ngen):
-        rels[i * nrel : (i + 1) * nrel], lengths[i] = simplify_relator(
-            rels[i * nrel : (i + 1) * nrel], nrel, full
+    Parameters:
+    presentation: A Numpy Array
+    max_relator_length: maximum length a simplified relator is allowed to take
+    lengths_of_words: A list containing length of each word.
+    
+    Returns:
+    (simplified_presentation, lengths_of_simplified_words)
+    simplified_presentation is a Numpy Array
+    lengths_of_simplified_words is a list of lengths of simplified words.
+    """
+    
+    presentation = np.array(presentation) # TODO: are we allowing presentation to be a list?
+    assert is_presentation_valid(presentation), f"{presentation} is not a valid presentation. Expect all zeros to be padded to the right." 
+    
+    lengths_of_words = lengths_of_words.copy()
+
+    for i in range(2): # assuming only two generators / words for now; TODO: generalize
+        presentation[i * max_relator_length : (i + 1) * max_relator_length], lengths_of_words[i] = simplify_relator(
+            presentation[i * max_relator_length : (i + 1) * max_relator_length], max_relator_length, cyclical=cyclical, padded=True
         )
 
-    return rels, lengths
+    return presentation, lengths_of_words
 
 
-# Checks if a set of relations is trivial (i.e. each relation has length 1 and each generator appears exactlly once as itself or its inverse.)
-def is_trivial(rels, ngen, nrel):
-    for i in range(ngen):
-        if len_words(rels[i * nrel : (i + 1) * nrel]) != 1:
+def is_presentation_valid(presentation):
+    """
+    Checks whether a given Numpy Array is a valid presentation or not.
+    An array is a valid presentation with two words if each half has all zeros padded to the right.
+    That is, [1, 2, 0, 0, -2, -1, 0, 0] is a valid presentation, but [1, 0, 2, 0, -2, -1, 0, 0] is not.
+    And if each word has nonzero length, i.e. [0, 0, 0, 0] and [1, 2, 0, 0] are invalid.
+    
+    Parameters:
+    presentation: A Numpy Array
+
+    Returns: True / False
+    """
+    
+    # for two generators and relators, the length of the presentation should be even.
+    is_length_valid = len(presentation) % 2 == 0
+
+    max_relator_length = len(presentation) // 2
+
+    first_word_length = np.count_nonzero(presentation[:max_relator_length])
+    second_word_length = np.count_nonzero(presentation[max_relator_length:])
+
+    is_first_word_valid = (presentation[first_word_length : max_relator_length] == 0).all()
+    is_second_word_valid = (presentation[max_relator_length + second_word_length :] == 0).all()
+
+    # for a presentation to be valid, each word should have length >= 1 and it should have all the zeros padded to the right.
+    is_valid = all([
+        is_length_valid,
+        first_word_length > 0,
+        second_word_length > 0,
+        is_first_word_valid,
+        is_second_word_valid
+    ])
+
+    return is_valid
+
+
+def is_presentation_trivial(presentation, max_relator_length):
+    """
+    Checks whether a given presentation is trivial or not. (Assumes two generators and relators)
+    For two generators, there are eight possible trivial presentations: <x, y>, <y, x> or any other 
+    obtained by replacing x --> x^{-1} and / or y --> y^{-1}.
+
+    Parameters:
+    presentation: A Numpy Array
+    
+    """
+    # each word length should be exactly 1
+    for i in range(2):
+        if np.count_nonzero(presentation[i * max_relator_length : (i + 1) * max_relator_length]) != 1:
             return False
 
-    rels_non_zero = abs(rels[rels != 0])
-    if len(rels_non_zero):
-        rels_non_zero.sort()
-        return np.array_equal(rels_non_zero - 1, np.arange(ngen))
-    return False
+    # if each word length is 1, each generator or its inverse should appear exactly once,
+    # i.e. non zero elements, after sorting, should equal to np.array([1, 2]).
+    non_zero_elements = abs(presentation[presentation != 0])
+    non_zero_elements.sort() 
+    return np.array_equal(non_zero_elements, np.arange(2))
 
 
-# Returns the set of trivial states of the right length (i.e. 8 states (x^{\pm 1}, y^{\pm 1}) and (y^{\pm 1}, x^{\pm 1}))
-def trivial_states(nrel):
+# Returns the set of trivial states of the right length (i.e. 8 states )
+def generate_trivial_states(max_relator_length):
+    """ 
+    Generate Numpy Arrays of trivial states for a given max_relator_length.
+    e.g. if max_relator_length = 3, one trivial state is [1, 0, 0, 2, 0, 0]. 
+    There are 8 trivial states in total: (x^{\pm 1}, y^{\pm 1}) and (y^{\pm 1}, x^{\pm 1})
+
+    Parameters:
+    max_relator_length: An int
+
+    Returns:
+    A numpy array of shape (8, 2 * max_relator_length), containing eight trivial states.
+    """
     states = []
     for i in [1, 2]:
         for sign1 in [-1, 1]:
             for sign2 in [-1, 1]:
                 states += [
                     [sign1 * i]
-                    + [0] * (nrel - 1)
+                    + [0] * (max_relator_length - 1)
                     + [sign2 * (3 - i)]
-                    + [0] * (nrel - 1)
+                    + [0] * (max_relator_length - 1)
                 ]
 
     return np.array(states)
@@ -135,6 +211,10 @@ def trivial_states(nrel):
 
 # Replace the i'th relation r_i by r_ir_j^{sign}.
 def concat(rels, nrel, i, j, sign, lengths):
+    """
+    
+    
+    """
     rels = rels.copy()
     rel1 = rels[i * nrel : (i + 1) * nrel]
 
