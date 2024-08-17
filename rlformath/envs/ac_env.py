@@ -222,22 +222,31 @@ def generate_trivial_states(max_relator_length):
 
 
 # Replace the i'th relation r_i by r_ir_j^{sign}.
-def concat(rels, nrel, i, j, sign, lengths):
+def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
     """
     
     
     """
-    rels = rels.copy()
-    rel1 = rels[i * nrel : (i + 1) * nrel]
+    assert all([i in [0, 1], \
+                j in [0, 1], \
+                i == 1 - j,]), f"expect i and j to be 0 or 1 and i != j; got i = {i}, j = {j}"
+
+    assert sign in [1, -1], f"expect sign to be +1 or -1, received {sign}"
+    # TODO: for clarity, I should replace sign with invert_j which is a bool.
+    
+    # TODO: either we should just not pass lengths or we should check that they are correct for the given presentation
+
+    presentation = presentation.copy()
+    rel1 = presentation[i * max_relator_length : (i + 1) * max_relator_length]
 
     lengths = lengths.copy()
 
     if sign == 1:
-        rel2 = rels[j * nrel : (j + 1) * nrel]
+        rel2 = presentation[j * max_relator_length : (j + 1) * max_relator_length]
     elif j:
-        rel2 = -rels[(j + 1) * nrel - 1 : j * nrel - 1 : -1]
+        rel2 = -presentation[(j + 1) * max_relator_length - 1 : j * max_relator_length - 1 : -1]
     else:
-        rel2 = -rels[nrel - 1 :: -1]
+        rel2 = -presentation[max_relator_length - 1 :: -1]
 
     rel1 = rel1[rel1.nonzero()]
     rel2 = rel2[rel2.nonzero()]
@@ -245,19 +254,22 @@ def concat(rels, nrel, i, j, sign, lengths):
     len1 = len(rel1)
     len2 = len(rel2)
 
+    # TODO: should we use simplify_relator here?
+    # It seems that he is using cyclical=False. Why? because that's really conjugation so we keep it separate.
+    # but i guess when you call ACMove, you can specify it there. I might want to change this.
     acc = 0
     while acc < min(len1, len2) and rel1[-1 - acc] == -rel2[acc]:
         acc += 1
 
     new_size = len1 + len2 - 2 * acc
 
-    if new_size <= nrel:
+    if new_size <= max_relator_length:
         lengths[i] = new_size
-        rels[i * nrel : i * nrel + len1 - acc] = rel1[: len1 - acc]
-        rels[i * nrel + len1 - acc : i * nrel + new_size] = rel2[acc:]
-        rels[i * nrel + new_size : (i + 1) * nrel] = 0
+        presentation[i * max_relator_length : i * max_relator_length + len1 - acc] = rel1[: len1 - acc]
+        presentation[i * max_relator_length + len1 - acc : i * max_relator_length + new_size] = rel2[acc:]
+        presentation[i * max_relator_length + new_size : (i + 1) * max_relator_length] = 0
 
-    return rels, lengths
+    return presentation, lengths
 
 
 # Conjugate the i'th relation by the j'th generator (i is 0 -- ngen-1, j is 1 -- ngen, sign = +/- 1 denoting conjugation by j or -j)

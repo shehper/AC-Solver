@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from rlformath.envs.ac_env import simplify_relator, is_presentation_valid, \
                                   is_presentation_trivial, generate_trivial_states, \
-                                  simplify_presentation
+                                  simplify_presentation, concatenate_relators
 
 # Parameterized tests
 @pytest.mark.parametrize(
@@ -63,7 +63,6 @@ def test_simplify_relator(relator, max_relator_length, cyclical, padded, expecte
         when relator = {relator}, max length = {max_relator_length}, cyclical = {cyclical}, padded = {padded}"
     assert result[1] == expected_length, f"Expected {expected_length}, but got {result[1]} \
         when relator = {relator}, max length = {max_relator_length}, cyclical = {cyclical}, padded = {padded}"
-
 
 @pytest.mark.parametrize(
     "presentation, expected",
@@ -127,6 +126,41 @@ def test_simplify_presentation(presentation, max_relator_length, lengths_of_word
     simplified_presentation, simplified_lengths = simplify_presentation(presentation, max_relator_length, lengths_of_words)
     assert np.array_equal(simplified_presentation, expected_output), "Simplified presentation does not match expected"
     assert simplified_lengths == expected_lengths, "Simplified lengths do not match expected"
+
+@pytest.mark.parametrize(
+    "rels, nrel, i, j, sign, lengths, expected_rels, expected_lengths",
+    [
+        # test case: no change as max_relator_length < length of concatenated relator
+        (np.array([1, 2, 0, 3, 4, 0]), 3, 0, 1, 1, [2, 2], np.array([1, 2, 0, 3, 4, 0]), [2, 2]),
+
+        # test case: simple concatenation
+        (np.array([1, 2, 0, 0, 3, 4, 0, 0]), 4, 0, 1, 1, [2, 2], np.array([1, 2, 3, 4, 3, 4, 0, 0]), [4, 2]),
+        (np.array([1, 2, 0, 0, 3, 4, 0, 0]), 4, 0, 1, -1, [2, 2], np.array([1, 2, -4, -3, 3, 4, 0, 0]), [4, 2]),
+        (np.array([1, 2, 0, 0, 3, 4, 0, 0]), 4, 1, 0, 1, [2, 2], np.array([1, 2, 0, 0, 3, 4, 1, 2]), [2, 4]),
+        (np.array([1, 2, 0, 0, 3, 4, 0, 0]), 4, 1, 0, -1, [2, 2], np.array([1, 2, 0, 0, 3, 4, -2, -1]), [2, 4]),
+
+        # test case: concatenation with simplify
+        (np.array([1, 2, 0, 0, -2, 1, 0, 0]), 4, 0, 1, 1, [2, 2], np.array([1, 1, 0, 0, -2, 1, 0, 0]), [2, 2]),
+        (np.array([1, 2, 0, 0, 1, -2, -1, 0]), 4, 1, 0, 1, [2, 3], np.array([1, 2, 0, 0, 1, 0, 0, 0]), [2, 1]),
+        # the following two cases are interesting.. because they would give different output if we performed
+        # cyclical reduction, which we do not.
+        (np.array([1, 1, 0, 0, 1, -2, 0, 0]), 4, 0, 1, -1, [2, 2], np.array([1, 1, 2, -1, 1, -2, 0, 0]), [4, 2]),
+        (np.array([1, 2, 0, 0, 1, -2, -1, 0]), 4, 1, 0, -1, [2, 3], np.array([1, 2, 0, 0, 1, -2, -1, 0]), [2, 3]),
+        
+        # Boundary conditions: first relator is shorter
+        (np.array([1, 0, 0, 1, 2, 3]), 3, 0, 1, 1, [1, 3], np.array([1, 0, 0, 1, 2, 3]), [1, 3]),
+        # No space for simplification: new size exceeds nrel
+        (np.array([1, 2, 3, 4, 5, 6]), 3, 0, 1, 1, [3, 3], np.array([1, 2, 3, 4, 5, 6]), [3, 3]),
+        # Complex case with partial cancellation and inversion
+        (np.array([1, -2, 0, 2, -1, 0]), 3, 0, 1, -1, [2, 2], np.array([1, -2, 0, 2, -1, 0]), [2, 2])
+    ]
+)
+def test_concatenate_relators(rels, nrel, i, j, sign, lengths, expected_rels, expected_lengths):
+    result_rels, result_lengths = concatenate_relators(rels, nrel, i, j, sign, lengths)
+    assert np.array_equal(result_rels, expected_rels), f"Relators do not match expected results \
+                                                        when rels = {rels}, expected_rels = {expected_rels}, \
+                                                            got result = {result_rels}"
+    assert result_lengths == expected_lengths, "Lengths do not match expected results"
 
 # def test_simplify_assertion():
 #     rel = np.array([1, -1, 2, 3, -3])
