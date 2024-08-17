@@ -111,15 +111,21 @@ def simplify_presentation(presentation, max_relator_length, lengths_of_words, cy
     lengths_of_simplified_words is a list of lengths of simplified words.
     """
     
-    presentation = np.array(presentation) # TODO: are we allowing presentation to be a list?
+    presentation = np.array(presentation) # TODO: Is this necessary?
     assert is_presentation_valid(presentation), f"{presentation} is not a valid presentation. Expect all zeros to be padded to the right." 
     
     lengths_of_words = lengths_of_words.copy()
 
-    for i in range(2): # assuming only two generators / words for now; TODO: generalize
-        presentation[i * max_relator_length : (i + 1) * max_relator_length], lengths_of_words[i] = simplify_relator(
-            presentation[i * max_relator_length : (i + 1) * max_relator_length], max_relator_length, cyclical=cyclical, padded=True
+    for i in range(2):
+        simplified_relator, length_i = simplify_relator(
+            relator=presentation[i * max_relator_length : (i + 1) * max_relator_length], 
+            max_relator_length=max_relator_length, 
+            cyclical=cyclical, 
+            padded=True
         )
+        
+        presentation[i * max_relator_length : (i + 1) * max_relator_length] = simplified_relator
+        lengths_of_words[i] = length_i
 
     return presentation, lengths_of_words
 

@@ -1,6 +1,8 @@
 import pytest
 import numpy as np
-from rlformath.envs.ac_env import simplify_relator, is_presentation_valid, is_presentation_trivial
+from rlformath.envs.ac_env import simplify_relator, is_presentation_valid, \
+                                  is_presentation_trivial, generate_trivial_states, \
+                                  simplify_presentation
 
 # Parameterized tests
 @pytest.mark.parametrize(
@@ -100,6 +102,31 @@ def test_is_presentation_trivial(presentation, expected):
     assert is_presentation_trivial(presentation) == expected, f"test failed for presentation {presentation}; \
                                                                 expected = {expected}"
 
+
+@pytest.mark.parametrize("max_relator_length", [1, 2, 3, 4])
+def test_generate_trivial_states_structure(max_relator_length):
+    states = generate_trivial_states(max_relator_length)
+    assert states.shape == (8, 2 * max_relator_length)
+    for state in states:
+        # Check if the first and max_relator_length + 1 entries are the only non-zero values
+        assert np.count_nonzero(state) == 2
+        # Check if all zeros are correctly placed
+        assert np.count_nonzero(state[1:max_relator_length]) == 0
+        assert np.count_nonzero(state[max_relator_length + 1:]) == 0
+        assert abs(state[0]) != abs(state[max_relator_length])
+
+@pytest.mark.parametrize(
+    "presentation, max_relator_length, lengths_of_words, expected_output, expected_lengths",
+    [
+        (np.array([1, 0, 2, 0]), 2, [1, 1], np.array([1, 0, 2, 0]), [1, 1]),  # Simple case
+        (np.array([1, 2, -2, -2, -1, 1]), 3, [3, 3], np.array([1, 0, 0, -2, 0, 0]), [1, 1]),  # Proper simplification
+        (np.array([1, 2, -1, 0, 2, -2, -1, 0]), 4, [3, 3], np.array([2, 0, 0, 0, -1, 0, 0, 0]), [1, 1]),  # Full utilization of relator length
+    ]
+)
+def test_simplify_presentation(presentation, max_relator_length, lengths_of_words, expected_output, expected_lengths):
+    simplified_presentation, simplified_lengths = simplify_presentation(presentation, max_relator_length, lengths_of_words)
+    assert np.array_equal(simplified_presentation, expected_output), "Simplified presentation does not match expected"
+    assert simplified_lengths == expected_lengths, "Simplified lengths do not match expected"
 
 # def test_simplify_assertion():
 #     rel = np.array([1, -1, 2, 3, -3])
