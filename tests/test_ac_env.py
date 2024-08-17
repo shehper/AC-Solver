@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from rlformath.envs.ac_env import simplify_relator, is_presentation_valid
+from rlformath.envs.ac_env import simplify_relator, is_presentation_valid, is_presentation_trivial
 
 # Parameterized tests
 @pytest.mark.parametrize(
@@ -80,6 +80,25 @@ def test_simplify_relator(relator, max_relator_length, cyclical, padded, expecte
 )
 def test_is_presentation_valid(presentation, expected):
     assert is_presentation_valid(presentation) == expected
+
+@pytest.mark.parametrize(
+    "presentation, expected",
+    [
+        (np.array([1, 0, 2, 0]), True),  # Trivial presentation <x, y>
+        (np.array([2, 0, 1, 0]), True),  # Trivial presentation <y, x>
+        (np.array([-1, 0, 2, 0]), True), # Non-trivial, contains x^-1 but invalid
+        (np.array([1, 0, -2, 0]), True), # Non-trivial, contains y^-1 but invalid
+        (np.array([0, 0, 0, 0]), False),  # No generators presented
+        (np.array([1, 2, 0, 0]), False),  # More than one generator in a single relator
+        (np.array([1, 0, 0, 0]), False),  # Incorrect relator length
+        (np.array([1, 0, 0, 2]), False),  # Generators are not correctly isolated
+        (np.array([-1, 0, -2, 0]), True), # All generators inverted incorrectly
+        (np.array([2, 0, 1, 0]), True)   # Incorrect max_relator_length for given setup
+    ]
+)
+def test_is_presentation_trivial(presentation, expected):
+    assert is_presentation_trivial(presentation) == expected, f"test failed for presentation {presentation}; \
+                                                                expected = {expected}"
 
 
 # def test_simplify_assertion():

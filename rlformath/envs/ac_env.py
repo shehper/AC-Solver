@@ -160,7 +160,7 @@ def is_presentation_valid(presentation):
     return is_valid
 
 
-def is_presentation_trivial(presentation, max_relator_length):
+def is_presentation_trivial(presentation):
     """
     Checks whether a given presentation is trivial or not. (Assumes two generators and relators)
     For two generators, there are eight possible trivial presentations: <x, y>, <y, x> or any other 
@@ -170,7 +170,12 @@ def is_presentation_trivial(presentation, max_relator_length):
     presentation: A Numpy Array
     
     """
+    # presentation should be valid
+    if not is_presentation_valid(presentation):
+        return False
+    
     # each word length should be exactly 1
+    max_relator_length = len(presentation) // 2
     for i in range(2):
         if np.count_nonzero(presentation[i * max_relator_length : (i + 1) * max_relator_length]) != 1:
             return False
@@ -179,7 +184,8 @@ def is_presentation_trivial(presentation, max_relator_length):
     # i.e. non zero elements, after sorting, should equal to np.array([1, 2]).
     non_zero_elements = abs(presentation[presentation != 0])
     non_zero_elements.sort() 
-    return np.array_equal(non_zero_elements, np.arange(2))
+    is_trivial = np.array_equal(non_zero_elements, np.arange(1, 3))
+    return is_trivial
 
 
 # Returns the set of trivial states of the right length (i.e. 8 states )
