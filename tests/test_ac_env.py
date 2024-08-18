@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 from rlformath.envs.ac_env import simplify_relator, is_presentation_valid, \
                                   is_presentation_trivial, generate_trivial_states, \
-                                  simplify_presentation, concatenate_relators
+                                  simplify_presentation, concatenate_relators, conjugate
 
 # Parameterized tests
 @pytest.mark.parametrize(
@@ -161,6 +161,42 @@ def test_concatenate_relators(rels, nrel, i, j, sign, lengths, expected_rels, ex
                                                         when rels = {rels}, expected_rels = {expected_rels}, \
                                                             got result = {result_rels}"
     assert result_lengths == expected_lengths, "Lengths do not match expected results"
+
+@pytest.mark.parametrize(
+    "rels, nrel, i, j, sign, lengths, expected_rels, expected_lengths",
+    [
+        # Basic conjugation without cancellation
+        (np.array([1, 2, 0, 2, 0, 0]), 3, 0, 2, 1, [2, 1], np.array([2, 1, 0, 2, 0, 0]), [2, 1]),
+        (np.array([2, 0, 0, 1, 2, 0]), 3, 1, 2, 1, [1, 2], np.array([2, 0, 0, 2, 1, 0]), [1, 2]),
+
+        # Basic conjugation without cancellation
+        (np.array([1, 0, 0, 2, 0, 0]), 3, 0, 2, 1, [1, 1], np.array([2, 1, -2, 2, 0, 0]), [3, 1]),
+        (np.array([1, -2, 0, 0, 1, 0, 0, 0]), 4, 0, 2, 1, [2, 1], np.array([2, 1, -2, -2, 1, 0, 0, 0]), [4, 1]),
+        (np.array([1, 0, 0, 0, 1, -2, 0, 0]), 4, 1, 2, 1, [1, 2], np.array([1, 0, 0, 0, 2, 1, -2, -2]), [1, 4]),
+        
+        # Conjugation with cancellation at the end
+        (np.array([2, 1, 0, 1, 0, 0]), 3, 0, 2, -1, [2, 1], np.array([1, 2, 0, 1, 0, 0]), [2, 1]),
+        (np.array([2, 0, 0, 0, 1, 2, 0, 0]), 4, 1, 2, 1, [1, 2], np.array([2, 0, 0, 0, 2, 1, 0, 0]), [1, 2]),
+
+        # Conjugation with cancellation at the start
+        (np.array([2, 1, 0, 1, 0, 0]), 3, 0, 2, -1, [2, 1], np.array([1, 2, 0, 1, 0, 0]), [2, 1]),
+        (np.array([2, 0, 0, 0, 1, 2, 0, 0]), 4, 1, 1, -1, [1, 2], np.array([2, 0, 0, 0, 2, 1, 0, 0]), [1, 2]),        
+
+        # Conjugation with cancellation at both ends
+        (np.array([1, 2, -1, 2, 0, 0]), 3, 0, 1, -1, [3, 1], np.array([2, 0, 0, 2, 0, 0]), [1, 1]),
+        
+        (np.array([2, 0, 0, 0, 1, 2, 0, 0]), 4, 0, 2, 1, [1, 2], np.array([2, 0, 0, 0, 1, 2, 0, 0]), [1, 2]),
+        (np.array([1, 0, 0, 0, 1, 2, -1, 0]), 4, 1, 1, -1, [1, 3], np.array([1, 0, 0, 0, 2, 0, 0, 0]), [1, 1]),
+
+        # No change due to insufficient max length
+        (np.array([1, 2, -1, 2, 0, 0]), 3, 0, 2, 1, [3, 1], np.array([1, 2, -1, 2, 0, 0]), [3, 1]),
+        
+    ]
+)
+def test_conjugate(rels, nrel, i, j, sign, lengths, expected_rels, expected_lengths):
+    result_rels, result_lengths = conjugate(rels, nrel, i, j, sign, lengths)
+    assert np.array_equal(result_rels, expected_rels), "Resulting relators do not match expected results"
+    assert result_lengths == expected_lengths, "Resulting lengths do not match expected results"
 
 # def test_simplify_assertion():
 #     rel = np.array([1, -1, 2, 3, -3])

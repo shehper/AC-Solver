@@ -268,7 +268,6 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
 
     # TODO: should we use simplify_relator here? Something like the following code.
     # concatenated_relator = np.concatenate((relator1_nonzero, relator2_nonzero))
-    # # print(concatenated_relator)
     # concatenated_relator, new_size = simplify_relator(relator=concatenated_relator, 
     #                                         max_relator_length=max_relator_length, 
     #                                         cyclical=False, 
@@ -293,56 +292,76 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
     return presentation, lengths
 
 
-# Conjugate the i'th relation by the j'th generator (i is 0 -- ngen-1, j is 1 -- ngen, sign = +/- 1 denoting conjugation by j or -j)
-def conjugate(rels, nrel, i, j, sign, lengths):
+def conjugate(presentation, max_relator_length, i, j, sign, lengths):
     """
+    Given a presentation <r_0, r_1>, returns a new presentation where r_i is replaced by x_j^{sign} r_i x_j^{-sign}. 
+
+    Parameters:
+    presentation: A Numpy Array representing a presentation
+    max_relator_length: An int. Maximum length the concatenated relator is allowed to have.
+                        If length of the concatenated relator (after simplification) is greater than this integer,
+                        the original presentation is returned without any changes. 
+                        The only simplifications applied are free reductions and not cyclical reductions as the latter
+                        correspond to conjugations on a given word. 
+    i: 0 or 1, index of the relator to change.
+    j: 1 or 2, index of the generator to conjugate with.
+    sign: +1 or -1, whether to invert x_j before concatenation.
+    lengths: A list of lengths of words in presentation.
+
+    Returns:
+    (resultant_presentation, lengths_of_resultant_presentations)
+    resultant_presentation is the presentation with r_i possibly replaced with x_j^{sign} r_i x_j^{-sign}.
+    lengths_of_resultant_presentations is the list of lengths of words in the resultant presentation.
     
     """
-    rels = rels.copy()
-    rel = rels[i * nrel : (i + 1) * nrel]
-    rel = rel[rel.nonzero()]
+    # TODO: perhaps i and j should be more uniformly both in [0, 1].
+    assert all([i in [0, 1], \
+                j in [1, 2]]), f"expect i to be 0 and 1 and j to be 1 or 2; got i = {i}, j = {j}"
 
-    lengths = lengths.copy()
+    assert sign in [1, -1], f"expect sign to be +1 or -1, received {sign}"
 
-    start_sign = sign * j
-    end_sign = -sign * j
-    rel_size = len(rel)
+    presentation = presentation.copy()
+    relator = presentation[i * max_relator_length : (i + 1) * max_relator_length]
+    relator_nonzero = relator[relator.nonzero()]
+    relator_size = len(relator_nonzero)
 
-    if rel[-1] == start_sign:
-        end_cancel = 1
-    else:
-        end_cancel = 0
+    # get the generator that is to be appended on the left
+    generator = sign * j
 
-    if rel[0] == end_sign:
-        start_cancel = 1
-    else:
-        start_cancel = 0
+    # TODO: again here, it will be good to use simplify_relator
+    
+    # check whether we will need to cancel any generators at the beginning and at the end
+    start_cancel = 1 if relator_nonzero[0] == -generator else 0
+    end_cancel = 1 if relator_nonzero[-1] == generator else 0
 
-    new_size = rel_size + 2 - 2 * (start_cancel + end_cancel)
+    # get the size of the resultant relator after cancellation
+    new_size = relator_size + 2 - 2 * (start_cancel + end_cancel)
 
-    if new_size <= nrel:
+    # update lengths and presentation
+    if new_size <= max_relator_length:
+        lengths = lengths.copy()
         lengths[i] = new_size
 
-        rels[
-            i * nrel
+        presentation[
+            i * max_relator_length
             + 1
-            - start_cancel : i * nrel
+            - start_cancel : i * max_relator_length
             + 1
-            + rel_size
+            + relator_size
             - 2 * start_cancel
             - end_cancel
-        ] = rel[start_cancel : rel_size - end_cancel]
+        ] = relator_nonzero[start_cancel : relator_size - end_cancel]
 
         if not start_cancel:
-            rels[i * nrel] = start_sign
+            presentation[i * max_relator_length] = generator
 
         if not end_cancel:
-            rels[i * nrel + rel_size + 1 - 2 * start_cancel] = end_sign
+            presentation[i * max_relator_length + relator_size + 1 - 2 * start_cancel] = -generator
 
         if start_cancel and end_cancel:
-            rels[i * nrel + new_size : i * nrel + new_size + 2] = 0
+            presentation[i * max_relator_length + new_size : i * max_relator_length + new_size + 2] = 0
 
-    return rels, lengths
+    return presentation, lengths
 
 # Defines AC moves..
 # we encode swap, we will mostly avoid it.
