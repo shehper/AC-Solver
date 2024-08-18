@@ -29,7 +29,7 @@ from gymnasium.spaces import Discrete, Box
 # TODO: fix indentation. Why is it half as usual here?
 # computes number of nonzero elements of a Numpy array
 def len_words(relators):
-    # TODO: this function should be removed.
+    # TODO: this function should be removed after all references of len_words have been removed.
     return np.count_nonzero(relators)
 
 # TODO: max_relator_length should be needed only in conjugate and concat, I think. 
@@ -103,6 +103,7 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
 
 # Simplifies each relator in a list of relator.
 def simplify_presentation(presentation, max_relator_length, lengths_of_words, cyclical=True):
+    # TODO: lengths_of_words should be called word_lengths instead
     """ 
     Simplifies a presentation by simplifying each of its relators. (See `simplify_relator` for more details.)
 
@@ -422,17 +423,25 @@ def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
                                             lengths=lengths,
     ) 
     
-    if cyclical:
-        presentation, lengths = simplify_presentation(
-                                    presentation=presentation,
-                                    max_relator_length=max_relator_length,
-                                    lengths_of_words=lengths,
-                                    cyclical=cyclical
-                                )  
+    # TODO: simplify_presentation seems to do something non-trivial even when
+    # cyclical=False. I ran into trouble by putting an `if cyclical==False` cond
+    # before the next lines of code.
+    # This is confusing because I thought cojugate and concatenate_relators
+    # already do the cyclical=False simplification. 
+    presentation, lengths = simplify_presentation(
+                                presentation=presentation,
+                                max_relator_length=max_relator_length,
+                                lengths_of_words=lengths,
+                                cyclical=cyclical
+                            )  
 
     return presentation, lengths
 
 class ACEnv(Env):
+    # TODO: config should perhaps be replaced by a config class
+    # TODO: separare this class into two classes --- one with supermoves and one without.
+    # TODO: I think I forgot to mention in the paper that if an episode terminates successfully, 
+    # we give a large maximum reward.
     def __init__(self, config):
 
         self.n = config["n_gen"]
@@ -446,8 +455,6 @@ class ACEnv(Env):
             for i in range(self.n)
         ]
         self.max_reward = self.max_count_steps * self.max_length * self.n
-        # self.min_lengths = self.lengths.copy()
-        # self.min_total_length = sum(self.lengths)
         self.actions = []
 
         self.inverse_actions = {
@@ -470,9 +477,7 @@ class ACEnv(Env):
                 13: (2, 9, 4, 1, 1),  # length = 5, appears 121 times
                 14: (3, 5, 11, 3, 9, 11, 5, 1),  # length = 8, appears 26 times
                 15: (4, 12, 2, 4, 4, 10, 3, 2, 9, 4),  # length = 10, apppears 19 times
-                16: (
-                    2,
-                    12,
+                16: (2, 12,
                     2,
                     10,
                     10,
@@ -524,20 +529,11 @@ class ACEnv(Env):
                 action + 1, self.state, self.n, self.max_length, self.lengths
             )
 
-        # self.min_lengths = [min(self.lengths[i], self.min_lengths[i]) for i in range(self.n)]
-        # self.min_total_length = min(self.min_total_length, sum(self.lengths))
-
         done = sum(self.lengths) == 2
         reward = self.max_reward * done - sum(self.lengths) * (1 - done)
 
         self.count_steps += 1
         truncated = self.count_steps >= self.max_count_steps
-
-        # record min_lengths before calling reset.
-        # info = {'min_lengths': self.min_lengths, 'min_total_length': self.min_total_length}
-
-        # if done:
-        #   info['actions'] = self.actions.copy()
 
         return (
             self.state,
