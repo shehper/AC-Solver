@@ -2,7 +2,8 @@ import pytest
 import numpy as np
 from rlformath.envs.ac_env import simplify_relator, is_array_valid_presentation, \
                                   is_presentation_trivial, generate_trivial_states, \
-                                  simplify_presentation, concatenate_relators, conjugate
+                                  simplify_presentation, concatenate_relators, conjugate, \
+                                  ACMove
 
 # Parameterized tests
 @pytest.mark.parametrize(
@@ -198,12 +199,44 @@ def test_conjugate(rels, nrel, i, j, sign, lengths, expected_rels, expected_leng
     assert np.array_equal(result_rels, expected_rels), "Resulting relators do not match expected results"
     assert result_lengths == expected_lengths, "Resulting lengths do not match expected results"
 
-# def test_simplify_assertion():
-#     rel = np.array([1, -1, 2, 3, -3])
-#     nrel = 2
-#     try:
-#         simplify_relator(rel, nrel)
-#     except AssertionError as e:
-#         assert str(e) == "Increase max length! Word length is bigger than maximum allowed length."
-#     else:
-#         assert False, "Expected an AssertionError"
+# moves_desc = """ 
+#     1. r_1 --> r_1 r_0 \n
+#     2. r_0 --> r_0 r_1^{-1} \n
+#     3. r_1 --> r_1 r_0^{-1} \n
+#     4. r_0 --> r_0 r_1 \n
+#     5: r_1 --> x_0^{-1} r_1 x_0 \n
+#     6: r_0 ---> x_1^{-1} r_0 x_1 \n
+#     7: r_1 --> x_1^{-1} r_1 x_1 \n
+#     8: r_0 ---> x_0 r_0 x_0^{-1} \n
+#     9: r_1 --> x_0 r_1 x_0^{-1} \n
+#     10: r_0 --> x_1 r_0 x_1^{-1} \n
+#     11: r_1 --> x_1 r_1 x_1^{-1} \n
+#     12: r_0 --> x_0^{-1} r_0 x_0"""
+
+def test_ACMove():
+    #TODO: include more tests here.
+    presentations = {
+        "initial": np.array([1, 2, 0, 0, -2, 0, 0, 0]),
+        "expected_concat_1": np.array([1, 2, 0, 0, 1, 0, 0, 0]),  # Example expected result
+        "expected_concat_2": np.array([1, 2, 2, 0, -2, 0, 0, 0]),  # Example expected result
+        "expected_concat_3": np.array([1, 2, 0, 0, -2, -2, -1, 0]),  # Example expected result
+        "expected_conj_5": np.array([1, 2, 0, 0, -2, 0, 0, 0]),  # Example expected result
+        "expected_conj_6": np.array([1, 2, 0, 0, -2, 0, 0, 0])   # Example expected result
+    }
+
+    lengths = [4, 4]  # Example lengths for the presentations
+    max_relator_length = 4
+    cyclical=True
+
+    # Test concatenate moves
+    for n in range(1, 4):
+        result_presentation, result_lengths = ACMove(n, presentations["initial"], max_relator_length, lengths, cyclical=cyclical)
+        expected_presentation = presentations[f"expected_concat_{n}"]
+        assert np.array_equal(result_presentation, expected_presentation), f"Test failed for concatenate move {n}. Expected {expected_presentation}, but got {result_presentation}"
+    
+    # Test conjugate moves
+    for n in range(5, 7):
+        result_presentation, result_lengths = ACMove(n, presentations["initial"], max_relator_length, lengths, cyclical=cyclical)
+        expected_presentation = presentations[f"expected_conj_{n}"]
+        assert np.array_equal(result_presentation, expected_presentation), f"Test failed for conjugate move {n}. Expected {expected_presentation}, but got {result_presentation}"
+

@@ -13,6 +13,11 @@ from gymnasium.spaces import Discrete, Box
 # lengths: relator_lengths # TODO: is this actually needed?
 # i, j: 
 
+# TODO: specify in many places that what's called AC here are really AC-prime moves.
+# TODO: change lengths to word_lengths everywhere.
+# TODO: lengths should probably not be input or outputted into all of the functions anyway.
+# There should be a separate function that computes lengths of words given a presentation.
+
 # functions: len_words, simplify, full_simplify, is_trivial, trivial_states, concat, conjugate
 # TODO: len_words should just be replaced with np.count_nonzero() everywhere in the codebase. 
 # simplify should be called simplify_relator; I don't know if we ever need padded=False so may well remove that
@@ -60,7 +65,7 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
     # number of nonzero entries
     relator_length = np.count_nonzero(relator)
     if len(relator) > relator_length:
-        assert relator[relator_length:] == 0, "expect all zeros to be at the right end"
+        assert (relator[relator_length:] == 0).all(), "expect all zeros to be at the right end"
     
     # loop over the array and remove inverses
     pos = 0
@@ -249,6 +254,7 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
 
     assert sign in [1, -1], f"expect sign to be +1 or -1, received {sign}"
     # TODO: for clarity, I should replace sign with invert_j which is a bool.
+    # TODO: As j != i, perhaps it's not important to include j.
     # TODO: either we should just not pass lengths or we should check that they are correct for the given presentation
 
     # get r_i
@@ -363,50 +369,68 @@ def conjugate(presentation, max_relator_length, i, j, sign, lengths):
 
     return presentation, lengths
 
-# Defines AC moves..
-# we encode swap, we will mostly avoid it.
-# 1. r_1 --> r_1 r_0
-# 2. r_0 --> r_0 r_1^{-1}
-# 3. r_1 --> r_1 r_0^{-1}
-# 4. r_0 --> r_0 r_1
-# 5: r_1 --> x_0^{-1} r_1 x_0
-# 6: r_0 ---> x_1^{-1} r_0 x_1
-# 7: r_1 --> x_1^{-1} r_1 x_1
-# 8: r_0 ---> x_0 r_0 x_0^{-1}
-# 9: r_1 --> x_0 r_1 x_0^{-1}
-# 10: r_0 --> x_1 r_0 x_1^{-1}
-# 11: r_1 --> x_1 r_1 x_1^{-1}
-# 12: r_0 --> x_0^{-1} r_0 x_0
-# odd n affect r_1, even n affect r_0
-# 1-4 concatenate, 5-12 conjugate
-def ACMove(n, rels, ngen, nrel, lengths, full=True):
+def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
+    """
+    Applies an AC move (concatenation or conjugation) to a presentation and returns the resultant presentation.
+    The move to apply and the relator it is applied to are decided by move_id.
 
-    # if n == 0:
-    #  return full_simplify(rels, ngen, nrel)
+    Parameters:
+    move_id: An int in range [1, 12] (both inclusive), deciding which AC move to apply. 
+            Odd values affect r_1; even values affect r_0.
+            The complete mappling between move_id and moves is as below:            
+            1. r_1 --> r_1 r_0
+            2. r_0 --> r_0 r_1^{-1}
+            3. r_1 --> r_1 r_0^{-1}
+            4. r_0 --> r_0 r_1
+            5: r_1 --> x_0^{-1} r_1 x_0
+            6: r_0 ---> x_1^{-1} r_0 x_1
+            7: r_1 --> x_1^{-1} r_1 x_1
+            8: r_0 ---> x_0 r_0 x_0^{-1}
+            9: r_1 --> x_0 r_1 x_0^{-1}
+            10: r_0 --> x_1 r_0 x_1^{-1}
+            11: r_1 --> x_1 r_1 x_1^{-1}
+            12: r_0 --> x_0^{-1} r_0 x_0
+    presentation: A NumPy Array representation the input presentation.
+    max_relator_length: The maximum length a relator is allowed to take.
+                        If the application of an AC move results in a relator with length larger than max_relator_length,
+                        the original presentation is returned.
+    lengths: A list of lengths of words in the presentation.
+    cyclical: A bool; whether to cyclically reduce words in the resultant presentation or not.
+    """
 
-    if n in [1, 2, 3, 4]:
-        i = n % 2  # i = 0 for n even, 1 for n odd
-        sign = ((n - i) // 2) % 2
-        rels, lengths = concat(
-            rels, nrel, i, 1 - i, (-1) ** sign, lengths
-        )  # TODO: concat takes lengths
-        return full_simplify(
-            rels, ngen, nrel, lengths, full
-        )  # TODO: full_simplify returns rels, lengths
+    assert move_id in range(1, 13), f"Expect n to be in range 1-12 (both inclusive); got {move_id}"
 
-    elif n in [5, 6, 7, 8, 9, 10, 11, 12]:
-        i = n % 2  # i = 0 for even, 1 for odd
-        j = ((n - i) // 2) % 2
-        sign = ((n - i - 2 * j) // 4) % 2
-        rels, lengths = conjugate(
-            rels, nrel, i, j + 1, (-1) ** sign, lengths
-        )  # TODO: concat takes lengths
-        return full_simplify(
-            rels, ngen, nrel, lengths, full
-        )  # TODO: full_simplify returns rels, lengths
+    if move_id in range(1, 5):
+        i = move_id % 2 
+        j = 1 - i
+        sign_parity = ((move_id - i) // 2) % 2
+        sign = (-1) ** sign_parity
+        move = concatenate_relators
+    elif move_id in range(5, 13):
+        i = move_id % 2  
+        jp = ((move_id - i) // 2) % 2 # = 0 or 1
+        sign_parity = ((move_id - i - 2 * jp) // 4) % 2
+        j = jp + 1 # = 1 or 2
+        sign = (-1) ** sign_parity
+        move = conjugate
+        
+    presentation, lengths = move(presentation=presentation,
+                                            max_relator_length=max_relator_length,
+                                            i=i,
+                                            j=j,
+                                            sign=sign,
+                                            lengths=lengths,
+    ) 
+    
+    if cyclical:
+        presentation, lengths = simplify_presentation(
+                                    presentation=presentation,
+                                    max_relator_length=max_relator_length,
+                                    lengths_of_words=lengths,
+                                    cyclical=cyclical
+                                )  
 
-    print("Error AC move not found")
-
+    return presentation, lengths
 
 class ACEnv(Env):
     def __init__(self, config):
