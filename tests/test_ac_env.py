@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from rlformath.envs.ac_env import simplify_relator, is_presentation_valid, \
+from rlformath.envs.ac_env import simplify_relator, is_array_valid_presentation, \
                                   is_presentation_trivial, generate_trivial_states, \
                                   simplify_presentation, concatenate_relators, conjugate
 
@@ -79,8 +79,8 @@ def test_simplify_relator(relator, max_relator_length, cyclical, padded, expecte
         (np.array([1, 2, -1, -2, 0, 0, 0, 0]), False)
     ]
 )
-def test_is_presentation_valid(presentation, expected):
-    assert is_presentation_valid(presentation) == expected
+def test_is_array_valid_presentation(presentation, expected):
+    assert is_array_valid_presentation(presentation) == expected
 
 @pytest.mark.parametrize(
     "presentation, expected",

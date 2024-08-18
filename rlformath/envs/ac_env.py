@@ -113,7 +113,7 @@ def simplify_presentation(presentation, max_relator_length, lengths_of_words, cy
     """
     
     presentation = np.array(presentation) # TODO: Is this necessary?
-    assert is_presentation_valid(presentation), f"{presentation} is not a valid presentation. Expect all zeros to be padded to the right." 
+    assert is_array_valid_presentation(presentation), f"{presentation} is not a valid presentation. Expect all zeros to be padded to the right." 
     
     lengths_of_words = lengths_of_words.copy()
 
@@ -131,7 +131,7 @@ def simplify_presentation(presentation, max_relator_length, lengths_of_words, cy
     return presentation, lengths_of_words
 
 
-def is_presentation_valid(presentation):
+def is_array_valid_presentation(array):
     """
     Checks whether a given Numpy Array is a valid presentation or not.
     An array is a valid presentation with two words if each half has all zeros padded to the right.
@@ -145,15 +145,15 @@ def is_presentation_valid(presentation):
     """
     
     # for two generators and relators, the length of the presentation should be even.
-    is_length_valid = len(presentation) % 2 == 0
+    is_length_valid = len(array) % 2 == 0
 
-    max_relator_length = len(presentation) // 2
+    max_relator_length = len(array) // 2
 
-    first_word_length = np.count_nonzero(presentation[:max_relator_length])
-    second_word_length = np.count_nonzero(presentation[max_relator_length:])
+    first_word_length = np.count_nonzero(array[:max_relator_length])
+    second_word_length = np.count_nonzero(array[max_relator_length:])
 
-    is_first_word_valid = (presentation[first_word_length : max_relator_length] == 0).all()
-    is_second_word_valid = (presentation[max_relator_length + second_word_length :] == 0).all()
+    is_first_word_valid = (array[first_word_length : max_relator_length] == 0).all()
+    is_second_word_valid = (array[max_relator_length + second_word_length :] == 0).all()
 
     # for a presentation to be valid, each word should have length >= 1 and it should have all the zeros padded to the right.
     is_valid = all([
@@ -178,7 +178,7 @@ def is_presentation_trivial(presentation):
     
     """
     # presentation should be valid
-    if not is_presentation_valid(presentation):
+    if not is_array_valid_presentation(presentation):
         return False
     
     # each word length should be exactly 1
