@@ -32,6 +32,7 @@ def len_words(relators):
 # Perhaps there can be a separate function for that. 
 
 def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
+    # TODO: maybe simplify_relator should be renamed reduce_word.  
     """
     Simplifies a relator by removing neighboring inverses. For example, if input is x^2 y y^{-1} x, the output will be x^3. 
     
@@ -196,7 +197,7 @@ def is_presentation_trivial(presentation):
 
 # Returns the set of trivial states of the right length (i.e. 8 states )
 def generate_trivial_states(max_relator_length):
-    """ 
+    r"""
     Generate Numpy Arrays of trivial states for a given max_relator_length.
     e.g. if max_relator_length = 3, one trivial state is [1, 0, 0, 2, 0, 0]. 
     There are 8 trivial states in total: (x^{\pm 1}, y^{\pm 1}) and (y^{\pm 1}, x^{\pm 1})
@@ -221,11 +222,26 @@ def generate_trivial_states(max_relator_length):
     return np.array(states)
 
 
-# Replace the i'th relation r_i by r_ir_j^{sign}.
 def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
     """
-    
-    
+    Given a presentation <r_0, r_1>, returns a new presentation where r_i is replaced by r_i r_j^{sign}.
+
+    Parameters:
+    presentation: A Numpy Array representing a presentation
+    max_relator_length: An int. Maximum length the concatenated relator is allowed to have.
+                        If length of the concatenated relator (after simplification) is greater than this integer,
+                        the original presentation is returned without any changes. 
+                        The only simplifications applied are free reductions and not cyclical reductions as the latter
+                        correspond to conjugations on a given word. 
+    i: 0 or 1, index of the relator to change.
+    j: 0 or 1, but not equal to i.
+    sign: +1 or -1, whether to invert r_j before concatenation.
+    lengths: A list of lengths of words in presentation.
+
+    Returns:
+    (resultant_presentation, lengths_of_resultant_presentations)
+    resultant_presentation is the presentation with r_i possibly replaced with r_i r_j^{sign}.
+    lengths_of_resultant_presentations is the list of lengths of words in the resultant presentation.
     """
     assert all([i in [0, 1], \
                 j in [0, 1], \
@@ -233,40 +249,45 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
 
     assert sign in [1, -1], f"expect sign to be +1 or -1, received {sign}"
     # TODO: for clarity, I should replace sign with invert_j which is a bool.
-    
     # TODO: either we should just not pass lengths or we should check that they are correct for the given presentation
 
+    # get r_i
     presentation = presentation.copy()
-    rel1 = presentation[i * max_relator_length : (i + 1) * max_relator_length]
+    relator1 = presentation[i * max_relator_length : (i + 1) * max_relator_length]
 
-    lengths = lengths.copy()
-
+    # TODO; what's going on here?
     if sign == 1:
-        rel2 = presentation[j * max_relator_length : (j + 1) * max_relator_length]
+        relator2 = presentation[j * max_relator_length : (j + 1) * max_relator_length]
     elif j:
-        rel2 = -presentation[(j + 1) * max_relator_length - 1 : j * max_relator_length - 1 : -1]
+        relator2 = -presentation[(j + 1) * max_relator_length - 1 : j * max_relator_length - 1 : -1]
     else:
-        rel2 = -presentation[max_relator_length - 1 :: -1]
+        relator2 = -presentation[max_relator_length - 1 :: -1]
 
-    rel1 = rel1[rel1.nonzero()]
-    rel2 = rel2[rel2.nonzero()]
+    relator1_nonzero = relator1[relator1 != 0]
+    relator2_nonzero = relator2[relator2 != 0]
 
-    len1 = len(rel1)
-    len2 = len(rel2)
+    # TODO: should we use simplify_relator here? Something like the following code.
+    # concatenated_relator = np.concatenate((relator1_nonzero, relator2_nonzero))
+    # # print(concatenated_relator)
+    # concatenated_relator, new_size = simplify_relator(relator=concatenated_relator, 
+    #                                         max_relator_length=max_relator_length, 
+    #                                         cyclical=False, 
+    #                                         padded=True)
 
-    # TODO: should we use simplify_relator here?
-    # It seems that he is using cyclical=False. Why? because that's really conjugation so we keep it separate.
-    # but i guess when you call ACMove, you can specify it there. I might want to change this.
+
+    len1 = len(relator1_nonzero)
+    len2 = len(relator2_nonzero)
+
     acc = 0
-    while acc < min(len1, len2) and rel1[-1 - acc] == -rel2[acc]:
+    while acc < min(len1, len2) and relator1_nonzero[-1 - acc] == -relator2_nonzero[acc]:
         acc += 1
 
     new_size = len1 + len2 - 2 * acc
 
     if new_size <= max_relator_length:
         lengths[i] = new_size
-        presentation[i * max_relator_length : i * max_relator_length + len1 - acc] = rel1[: len1 - acc]
-        presentation[i * max_relator_length + len1 - acc : i * max_relator_length + new_size] = rel2[acc:]
+        presentation[i * max_relator_length : i * max_relator_length + len1 - acc] = relator1_nonzero[: len1 - acc]
+        presentation[i * max_relator_length + len1 - acc : i * max_relator_length + new_size] = relator2_nonzero[acc:]
         presentation[i * max_relator_length + new_size : (i + 1) * max_relator_length] = 0
 
     return presentation, lengths
@@ -274,6 +295,9 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
 
 # Conjugate the i'th relation by the j'th generator (i is 0 -- ngen-1, j is 1 -- ngen, sign = +/- 1 denoting conjugation by j or -j)
 def conjugate(rels, nrel, i, j, sign, lengths):
+    """
+    
+    """
     rels = rels.copy()
     rel = rels[i * nrel : (i + 1) * nrel]
     rel = rel[rel.nonzero()]
