@@ -1,3 +1,9 @@
+"""
+Implementation of PPO for AC graph.
+
+"""
+# TODO: remove transformer as the network architecture or not?
+
 import numpy as np
 import torch
 from torch.distributions import Categorical
@@ -13,25 +19,29 @@ import argparse
 from collections import deque
 from ast import literal_eval
 from multiprocessing import cpu_count
-import sys
+# import sys
 import math
 from os.path import dirname, abspath
 
+from rlformath.envs.ac_env import ACEnv
+len_words = np.count_nonzero
+
 head_dir = dirname(dirname(abspath(__file__)))
-try:
-  sys.path.insert(1, head_dir+'/search')
-  from acenv import len_words, ACEnv
-except: 
-   print("search folder must lie in the second parent directory of this file, \
-         i.e. compared to this file, the folder ../search must exist with files \
-         bfs.py and acenv.py")
+print(head_dir)
+# try:
+#   sys.path.insert(1, head_dir+'/search')
+#   from acenv import len_words, ACEnv
+# except: 
+#    print("search folder must lie in the second parent directory of this file, \
+#          i.e. compared to this file, the folder ../search must exist with files \
+#          bfs.py and acenv.py")
    
-try:
-  sys.path.insert(2, head_dir+'/transformer/model')
-  from model import GPTConfig, GPT
-except: 
-   print("transformer folder must lie in the second parent directory of this file, \
-         it must contain gpt/model.py that defines a GPT model.")
+# try:
+#   sys.path.insert(2, head_dir+'/transformer/model')
+#   from model import GPTConfig, GPT
+# except: 
+#    print("transformer folder must lie in the second parent directory of this file, \
+#          it must contain gpt/model.py that defines a GPT model.")
    
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -252,6 +262,7 @@ if __name__ == '__main__':
     if not args.fixed_init_state:
         # load initial presentations from a file. they are already sorted by n, i.e. by their hardness
         assert args.states_type in ['solved', 'unsolved', 'all'], "states-type must be solved, unsolved, or all"
+        # TODO: fix the path below
         with open(head_dir+f'/search/{args.states_type}_miller_schupp_presentations.txt', 'r') as file:
             initial_states = [literal_eval(line[:-1]) for line in file]
             print(f"loaded {len(initial_states)} presentations from {args.states_type}_miller_schupp_presentations.txt.")

@@ -524,11 +524,12 @@ class ACEnv(Env):
         if self.supermoves and action + 1 in self.supermoves.keys():
             for a in self.supermoves[action + 1]:
                 self.state, self.lengths = ACMove(
-                    a, self.state, self.n, self.max_length, self.lengths
+                    a, self.state, self.max_length, self.lengths
                 )
         else:
+            # TODO: I should try it with cyclical = False
             self.state, self.lengths = ACMove(
-                action + 1, self.state, self.n, self.max_length, self.lengths
+                action + 1, self.state, self.max_length, self.lengths
             )
 
         done = sum(self.lengths) == 2
