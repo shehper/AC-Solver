@@ -4,37 +4,25 @@ Implementation of PPO for AC graph.
 """
 # TODO: remove transformer as the network architecture or not?
 
+import math
 import numpy as np
-import torch
-from torch.distributions import Categorical
-from torch.optim import Adam
-from torch import nn
 import gymnasium as gym
+import argparse
+import torch
 import random
 import time
 import wandb
-import os
+from importlib import resources
 from distutils.util import strtobool
-import argparse
 from collections import deque
 from ast import literal_eval
 from multiprocessing import cpu_count
-# import sys
-import math
-from os.path import dirname, abspath
-
+from torch.distributions import Categorical
+from torch.optim import Adam
+from torch import nn
+from os import makedirs
+from os.path import dirname, abspath, basename, join
 from rlformath.envs.ac_env import ACEnv
-len_words = np.count_nonzero
-
-head_dir = dirname(dirname(abspath(__file__)))
-print(head_dir)
-# try:
-#   sys.path.insert(1, head_dir+'/search')
-#   from acenv import len_words, ACEnv
-# except: 
-#    print("search folder must lie in the second parent directory of this file, \
-#          i.e. compared to this file, the folder ../search must exist with files \
-#          bfs.py and acenv.py")
    
 # try:
 #   sys.path.insert(2, head_dir+'/transformer/model')
@@ -45,7 +33,7 @@ print(head_dir)
    
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--exp-name", type=str, default=os.path.basename(__file__).rstrip(".py"),
+    parser.add_argument("--exp-name", type=str, default=basename(__file__).rstrip(".py"),
         help="the name of this experiment")
     parser.add_argument("--seed", type=int, default=1,
         help="seed of the experiment")
@@ -167,7 +155,7 @@ def to_list_of_lists(pres):
     assert type(pres) == list, "pres must be a list"
     len_arr = len(pres) # obtain length of the list
      # obtain length of each relator
-    len1, len2 = len_words(np.array(pres[:len_arr//2])), len_words(np.array(pres[len_arr//2:]))
+    len1, len2 = np.count_nonzero(np.array(pres[:len_arr//2])), np.count_nonzero(np.array(pres[len_arr//2:]))
     # extract each relator
     rel1, rel2 = pres[:len1], pres[len_arr//2:len_arr//2+len2]
     rels = [rel1, rel2]
@@ -246,7 +234,19 @@ def make_env(presentation, args):
 def get_pres(pres_number, max_length): 
     rel1, rel2 = to_list_of_lists(initial_states[pres_number])
     return to_array(rel1, rel2, max_length) 
-    
+
+def get_initial_states(states_type):
+    # load initial presentations from a file. they are already sorted by n, i.e. by their hardness
+    assert states_type in ["solved", "all"], "states-type must be solved, or all"
+    try:
+        with resources.open_text('rlformath.search.miller_schupp.data', f'{states_type}_miller_schupp_presentations.txt') as file:
+            initial_states = [literal_eval(line[:-1]) for line in file]
+            print(f"loaded {len(initial_states)} presentations from {states_type}_miller_schupp_presentations.txt.")
+        return initial_states
+    except:
+        return None
+
+
 if __name__ == '__main__':
     args = parse_args()
     if args.override_num_envs and cpu_count() > args.num_envs:
@@ -260,13 +260,8 @@ if __name__ == '__main__':
 
     # if initial states are to be loaded from a file, do that.
     if not args.fixed_init_state:
-        # load initial presentations from a file. they are already sorted by n, i.e. by their hardness
-        assert args.states_type in ['solved', 'unsolved', 'all'], "states-type must be solved, unsolved, or all"
-        # TODO: fix the path below
-        with open(head_dir+f'/search/{args.states_type}_miller_schupp_presentations.txt', 'r') as file:
-            initial_states = [literal_eval(line[:-1]) for line in file]
-            print(f"loaded {len(initial_states)} presentations from {args.states_type}_miller_schupp_presentations.txt.")
-
+        initial_states = get_initial_states(states_type=args.states_type)
+        
     # initiate envs
     if args.fixed_init_state: 
         envs = gym.vector.SyncVectorEnv([make_env(to_array(args.relator1, args.relator2, args.max_length), args) 
@@ -320,7 +315,7 @@ if __name__ == '__main__':
     else:
         run_name = f"{args.exp_name}_ppo-ffn-nodes_{args.nodes_counts}_{int(time.time())}"
     out_dir = f"{dirname(abspath(__file__))}/out/{run_name}"
-    os.makedirs(out_dir, exist_ok=True)
+    makedirs(out_dir, exist_ok=True)
     if args.wandb_log:
         run = wandb.init(
             project=args.wandb_project_name,
@@ -557,6 +552,6 @@ if __name__ == '__main__':
                         "supermoves": envs.envs[0].supermoves, # dict of supermoves or None
                     }
             print(f"saving checkpoint to {out_dir}")
-            torch.save(checkpoint, os.path.join(out_dir, 'ckpt.pt'))
+            torch.save(checkpoint, join(out_dir, 'ckpt.pt'))
 
     envs.close()
