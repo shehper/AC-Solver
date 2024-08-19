@@ -4,6 +4,7 @@ Miller-Schupp presentations are labelled by an integer n >= 1 and a word w in tw
 MS(n, w) = <x, y | x^{-1} y^n x = y^{n+1}, x = w>
 """
 
+import os
 import argparse
 import numpy as np
 from itertools import product
@@ -69,13 +70,25 @@ def generate_miller_schupp_presentations(n, max_w_len):
 
     return out
 
-def trivialize_miller_schupp_through_search(min_n, max_n, min_w_len, max_w_len, max_nodes_to_explore, search_fn):
+def write_list_to_text_file(list, filepath):
+    with open(filepath, 'w') as f:
+        for element in list:
+            f.write(f"{element}\n")
+
+def trivialize_miller_schupp_through_search(min_n, 
+                                            max_n, 
+                                            min_w_len, 
+                                            max_w_len, 
+                                            max_nodes_to_explore, 
+                                            search_fn, 
+                                            write_output_to_file=False):
+    
     rels = {}
 
     for n in range(min_n, max_n + 1):
         rels[n] = generate_miller_schupp_presentations(n, max_w_len)
 
-    solved_rels, unsolved_rels, solved_paths, unsolved_paths = [], [], [], []
+    solved_rels, unsolved_rels, solved_paths = [], [], []
     for n in range(min_n, max_n + 1):
         for lenw in range(min_w_len, max_w_len + 1):
             print(f"Applying {search_fn.__name__} to presentations of n = {n}, lenw = {lenw}")
@@ -92,12 +105,16 @@ def trivialize_miller_schupp_through_search(min_n, max_n, min_w_len, max_w_len, 
                     solved_paths.append(path)
                 else:
                     unsolved_rels.append(pres)
-                    unsolved_paths.append(path)
 
-    # TODO: what does unsolved_path even mean if the presentation has not been solved?
+    if write_output_to_file:
+        dirname = os.path.realpath(__file__)
+        filename_base = f"n-{min_n}-to-{max_n}_lenw-{min_w_len}-to-{max_w_len}-{search_fn.__name__}"
+        filepath_base = os.path.join(dirname, filename_base)
+        write_list_to_text_file(list=solved_rels, filepath=filepath_base + "_solved")
+        write_list_to_text_file(list=unsolved_rels, filepath=filepath_base + "_unsolved")
+        write_list_to_text_file(list=solved_paths, filepath=filepath_base + "_paths")
 
-    return solved_rels, unsolved_rels, solved_paths, unsolved_paths
-
+    return solved_rels, unsolved_rels, solved_paths
 
 
 if __name__ == "__main__":
@@ -155,40 +172,16 @@ if __name__ == "__main__":
     else:
         raise ValueError(f"Unsupported search algorithm: {args.search_algorithm}; expect greedy or bfs")
 
-    solved_rels, unsolved_rels, solved_paths, unsolved_paths = trivialize_miller_schupp_through_search(
+    solved_rels, unsolved_rels, solved_paths = trivialize_miller_schupp_through_search(
         min_n = args.min_n,
         max_n = args.max_n,
         min_w_len = args.min_w_len,
         max_w_len=args.max_w_len,
         max_nodes_to_explore=args.max_nodes_to_explore,
         search_fn=search_fn,
+        write_output_to_file=True,
     )
 
     print(solved_rels)
     print(unsolved_rels)
     print(solved_paths)
-    print(unsolved_paths)
-
-
-
-
-        # TODO: clean up the following lines.
-            # Uncomment these lines if you want to save the results of this file
-            # to text files.
-        # with open(dirname(abspath(__file__)) +
-        #           '/out/solved_miller_schupp_presentations.txt', 'w') as f:
-        #   for line in solved_rels:
-        #       f.write(f"{line}\n")
-
-        # with open(dirname(abspath(__file__)) +
-        #           '/out/unsolved_miller_schupp_presentations.txt', 'w') as f:
-        #   for line in unsolved_rels:
-        #       f.write(f"{line}\n")
-
-        # with open(dirname(abspath(__file__)) + "/bfs_solved_paths.txt", "w") as f:
-        #     for line in solved_paths:
-        #         f.write(f"{line}\n")
-
-        # with open(dirname(abspath(__file__)) + "/bfs_unsolved_paths.txt", "w") as f:
-        #     for line in unsolved_paths:
-        #         f.write(f"{line}\n")

@@ -7,7 +7,7 @@ from rlformath.search.breadth_first import bfs
 def test_trivialize_miller_schupp_through_greedy_search():
 
     # Case 1
-    solved_rels, unsolved_rels, solved_paths, unsolved_paths = trivialize_miller_schupp_through_search(
+    solved_rels, unsolved_rels, solved_paths = trivialize_miller_schupp_through_search(
         min_n=1,
         max_n=2,
         min_w_len=1,
@@ -36,15 +36,12 @@ def test_trivialize_miller_schupp_through_greedy_search():
                              [(0, 10), (9, 10), (4, 9), (12, 9), (7, 9), (4, 8), (7, 8), (2, 7), (8, 5), (3, 5), (9, 3), (2, 2)], 
                              [(0, 10), (2, 9), (8, 7), (6, 5), (4, 4), (3, 3), (3, 2)]]
 
-    expected_unsolved_paths = []
-
     assert solved_rels == expected_solved_rels
     assert unsolved_rels == expected_unsolved_rels
     assert solved_paths == expected_solved_paths
-    assert unsolved_paths == expected_unsolved_paths
 
     # Case 2
-    solved_rels, unsolved_rels, solved_paths, unsolved_paths = trivialize_miller_schupp_through_search(
+    solved_rels, unsolved_rels, solved_paths = trivialize_miller_schupp_through_search(
         min_n=3,
         max_n=4,
         min_w_len=3,
@@ -88,31 +85,14 @@ def test_trivialize_miller_schupp_through_greedy_search():
                                [(0, 16), (9, 16), (4, 13), (12, 13), (6, 13), (5, 13), (8, 13), (2, 8), (12, 6), (1, 5), (1, 4), (1, 3), (1, 2)], 
                                [(0, 16), (2, 13), (8, 11), (1, 7), (6, 5), (8, 5), (4, 4), (4, 3), (4, 2)]]
 
-    expected_unsolved_paths = [[(0, 14), (8, 14), (6, 14), (9, 14), (7, 14), (2, 15), (6, 15), (2, 16), (6, 16), (12, 16), (5, 16), (2, 15), (6, 15), 
-                                    (7, 15), (9, 15), (4, 16), (5, 16), (12, 16), (10, 16), (4, 15), (6, 15), (8, 15), (9, 15), (10, 15), (10, 15), (10, 15), (12, 17)], 
-                                [(0, 14), (8, 14), (6, 14), (9, 14), (9, 14), (4, 15), (6, 15), (4, 16), (6, 16), (12, 16), (5, 16), (4, 15), (9, 15), (11, 15), 
-                                    (12, 15), (2, 16), (8, 16), (10, 16), (2, 15), (5, 15), (12, 15), (10, 15), (10, 15), (2, 14), (10, 14), (2, 15), (6, 15), (9, 15), (12, 17)], 
-                                [(0, 16), (9, 16), (7, 16), (8, 16), (4, 17), (6, 17), (6, 17), (6, 17), (6, 17), (12, 17), (5, 17), (2, 18), (6, 18), (7, 18), 
-                                    (8, 18), (8, 18), (10, 18), (10, 18), (10, 18), (12, 20)], 
-                                [(0, 16), (6, 16), (6, 16), (6, 16), (6, 16), (5, 16), (2, 15), (10, 15), (2, 16), (8, 16), (8, 16), (2, 15), (7, 15), (8, 15), 
-                                    (2, 16), (10, 16), (8, 16), (2, 15), (12, 15), (2, 16), (10, 16), (8, 16), (11, 16), (4, 15), (6, 15), (8, 15), (6, 15), 
-                                    (6, 15), (4, 16), (6, 16), (12, 18)], 
-                                [(0, 16), (8, 16), (6, 16), (9, 16), (9, 16), (4, 15), (6, 15), (4, 16), (12, 16), (12, 16), 
-                                    (4, 15), (8, 15), (8, 15), (6, 15), (4, 16), (6, 16), (12, 16), (5, 16), (4, 15), (9, 15), (11, 15), (10, 15), (10, 15), 
-                                    (10, 15), (8, 15), (4, 16), (6, 16), (12, 16), (12, 16), (6, 16), (5, 16), (12, 18)], 
-                                [(0, 16), (6, 16), (6, 16), (6, 16), (6, 16), (2, 17), (9, 17), (9, 17), (8, 17), (8, 17), (10, 17), (10, 17), (10, 17), (10, 17), 
-                                 (4, 18), (12, 18), (12, 18), (6, 18), (11, 18), (12, 20)]]
-
-
     assert solved_rels == expected_solved_rels
     assert unsolved_rels == expected_unsolved_rels
     assert solved_paths == expected_solved_paths
-    assert unsolved_paths == expected_unsolved_paths
 
 
 # def test_trivialize_miller_schupp_through_bfs():
 
-#     solved_rels, unsolved_rels, solved_paths, unsolved_paths = trivialize_miller_schupp_through_search(
+#     solved_rels, unsolved_rels, solved_paths = trivialize_miller_schupp_through_search(
 #         min_n=1,
 #         max_n=2,
 #         min_w_len=1,
@@ -140,9 +120,6 @@ def test_trivialize_miller_schupp_through_greedy_search():
 #                              [(0, 10), (9, 10), (4, 9), (12, 9), (7, 9), (4, 8), (7, 8), (2, 7), (8, 5), (3, 5), (9, 3), (2, 2)], 
 #                              [(0, 10), (2, 9), (8, 7), (6, 5), (4, 4), (3, 3), (3, 2)]]
 
-#     expected_unsolved_paths = []
-
 #     assert solved_rels == expected_solved_rels
 #     assert unsolved_rels == expected_unsolved_rels
 #     assert solved_paths == expected_solved_paths
-#     assert unsolved_paths == expected_unsolved_paths
