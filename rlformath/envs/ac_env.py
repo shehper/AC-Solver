@@ -428,6 +428,8 @@ def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
     # before the next lines of code.
     # This is confusing because I thought cojugate and concatenate_relators
     # already do the cyclical=False simplification. 
+
+    # TODO: cyclical should probably be called cylically_reduce.
     presentation, lengths = simplify_presentation(
                                 presentation=presentation,
                                 max_relator_length=max_relator_length,
