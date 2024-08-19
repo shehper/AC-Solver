@@ -1,5 +1,5 @@
 import numpy as np
-from rlformath.search.greedy import gs  # Ensure this imports the bfs function correctly
+from rlformath.search.greedy import greedy_search  # Ensure this imports the bfs function correctly
 
 def test_gs_on_AK2():
     # Input setup: n=2 case of Akbulut-Kirby series
@@ -11,7 +11,7 @@ def test_gs_on_AK2():
                        (7, 11), (9, 11), (4, 8), (7, 8), (3, 5), (6, 5), (2, 3), (9, 3), (3, 2)])
     
     # Call the function
-    result = gs(presentation=presentation, max_nodes_to_explore=int(1e6), verbose=False)
+    result = greedy_search(presentation=presentation, max_nodes_to_explore=int(1e6), verbose=False)
     
     # Assert the result is as expected
     assert result == expected_output, "greedy search function did not return the expected output"

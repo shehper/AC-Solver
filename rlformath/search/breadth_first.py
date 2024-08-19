@@ -13,7 +13,7 @@ def bfs(presentation,
         cyclically_reduce_after_moves=False):
 
     """
-    Performs breadth-first-search on AC graph starting from the node associated to input presentation.
+    Performs breadth-first-search on AC graph starting from the node corresponding to input presentation.
     Search is terminated when a node corresponding to a trivial state is found or when we have explored `max_nodes_to_explore` nodes.
 
     Parameters:
