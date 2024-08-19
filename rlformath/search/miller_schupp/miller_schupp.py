@@ -71,6 +71,8 @@ def generate_miller_schupp_presentations(n, max_w_len):
     return out
 
 def write_list_to_text_file(list, filepath):
+    if not filepath.endswith(".txt"):
+        filepath = filepath + ".txt"
     with open(filepath, 'w') as f:
         for element in list:
             f.write(f"{element}\n")
@@ -107,8 +109,9 @@ def trivialize_miller_schupp_through_search(min_n,
                     unsolved_rels.append(pres)
 
     if write_output_to_file:
-        dirname = os.path.realpath(__file__)
-        filename_base = f"n-{min_n}-to-{max_n}_lenw-{min_w_len}-to-{max_w_len}-{search_fn.__name__}"
+        dirname = os.path.join(os.path.dirname(os.path.realpath(__file__)), "data")
+        os.makedirs(dirname, exist_ok=True)
+        filename_base = f"n-{min_n}-to-{max_n}_lenw-{min_w_len}-to-{max_w_len}-max-nodes-{max_nodes_to_explore}-{search_fn.__name__}"
         filepath_base = os.path.join(dirname, filename_base)
         write_list_to_text_file(list=solved_rels, filepath=filepath_base + "_solved")
         write_list_to_text_file(list=unsolved_rels, filepath=filepath_base + "_unsolved")
@@ -162,6 +165,8 @@ if __name__ == "__main__":
     
     args = parse_args()
     assert args.search_algorithm in ["greedy", "bfs"], f"expect search-algorithm to be greedy or bfs; got {args.search_algorithm}"
+    assert args.min_n <= args.max_n, f"min_n cannot be greater than max_n"
+    assert args.min_w_len <= args.max_w_len, f"min_w_len cannot be greater than max_w_len"
 
     if args.search_algorithm == "greedy":
         from rlformath.search.greedy import greedy_search
