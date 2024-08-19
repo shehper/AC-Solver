@@ -23,4 +23,3 @@ def test_bfs_max_nodes_reached():
     expected_output = (False, None)  # Assuming no solution within max nodes
     result = bfs(presentation=presentation, max_nodes_to_explore=10, verbose=False)
     assert result == expected_output, "BFS should stop when max_nodes_to_explore is reached"
-
