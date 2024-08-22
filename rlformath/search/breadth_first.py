@@ -1,11 +1,14 @@
 """
 Implementation of BFS for AC graph.
 
+Example:
+Trivialize Akbulut-Kirby series n=2 case "AK(2)" through BFS as 
+python breadth_first.py
 """
 
 import numpy as np
 from collections import deque 
-from rlformath.envs.ac_env import ACMove, is_array_valid_presentation
+from rlformath.envs.ac_env import ACMove, is_array_valid_presentation, is_presentation_trivial
 
 def bfs(presentation, 
         max_nodes_to_explore, 
@@ -93,10 +96,13 @@ if __name__=='__main__':
 
     ans, path = bfs(presentation=presentation, 
                     max_nodes_to_explore=int(1e6))
-    path(path)
 
     if path:
-        presentation = presentation
+        print(f"""
+              Presentation {presentation} solved!
+              Path length: {len(path)}
+              """)
+        print(f"Checking whether this path actually leads to a trivial state..")
         word_lengths = [5, 6]
 
         for action, _ in path[1:]:
@@ -106,4 +112,5 @@ if __name__=='__main__':
                                          lengths=word_lengths,
                                          cyclical=False)
 
-        print(f"Final state: {presentation}")
+        print(f"Final state achieved: {presentation}")
+        print(f"Is trivial? {is_presentation_trivial(presentation)}")

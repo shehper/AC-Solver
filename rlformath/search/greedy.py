@@ -1,11 +1,14 @@
 """
 Implementation of greedy search for AC graph.
 
+Example:
+Trivialize Akbulut-Kirby series n=2 case "AK(2)" through greedy search as 
+python greedy.py
 """
 
 import numpy as np
 import heapq
-from rlformath.envs.ac_env import ACMove
+from rlformath.envs.ac_env import ACMove, is_presentation_trivial
 
 
 def greedy_search(presentation, 
@@ -86,22 +89,27 @@ def greedy_search(presentation,
     return False, path + [(action, new_length)]
 
 
-
-
 if __name__=='__main__':
     # AK(2)
     presentation =  np.array([1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0])
 
-    _, path = greedy_search(presentation=presentation, max_nodes_to_explore=int(1e6), verbose=True)
-    print(path)
+    ans, path = greedy_search(presentation=presentation, 
+                    max_nodes_to_explore=int(1e6))
 
-    # check that the path actually trivializes the initial state
     if path:
-        state = presentation
-        lengths = [6, 5]
-        max_length = 7
+        print(f"""
+              Presentation {presentation} solved!
+              Path length: {len(path)}
+              """)
+        print(f"Checking whether this path actually leads to a trivial state..")
+        word_lengths = [5, 6]
 
         for action, _ in path[1:]:
-            old_state = state.copy()
-            state, lengths = ACMove(action, state, max_length, lengths, cyclical=False)
-        print(f"Final state: {state}")
+            presentation, word_lengths = ACMove(move_id=action,
+                                         presentation=presentation,
+                                         max_relator_length=7,
+                                         lengths=word_lengths,
+                                         cyclical=False)
+
+        print(f"Final state achieved: {presentation}")
+        print(f"Is trivial? {is_presentation_trivial(presentation)}")
