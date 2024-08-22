@@ -6,7 +6,8 @@ import torch
 import torch.nn as nn
 import gymnasium as gym
 from argparse import Namespace
-from rlformath.agents.ppo import parse_args, to_array, to_list_of_lists, layer_init, get_net, Agent, make_env, get_curr_lr
+from rlformath.agents.ppo import to_array, to_list_of_lists, layer_init, get_net, Agent, make_env, get_curr_lr
+from rlformath.agents.ppo_train import parse_args
 from rlformath.envs.ac_env import ACEnv
 
 # Sample input data for testing
