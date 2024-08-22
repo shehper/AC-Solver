@@ -13,6 +13,8 @@ def test_generate_miller_schupp_presentations(n, max_w_len):
 
     for w_len in range(1, max_w_len + 1):
         for presentation in ms_presentations[w_len]:
+            assert len(presentation) % 2 == 0, "expect length of each presentation to be even as number of relators is 2."
+            
             max_relator_length = len(presentation) // 2
             relator1 = presentation[:max_relator_length]
             relator2 = presentation[max_relator_length:]
