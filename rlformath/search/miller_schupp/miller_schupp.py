@@ -1,5 +1,5 @@
 """
-Applies a search algorithm of your choice to all presentations of Miller-Schupp series up to specified n and length(w).
+Applies a search algorithm of your choice to presentations of Miller-Schupp series with specified n and length(w) values.
 Miller-Schupp presentations are labelled by an integer n >= 1 and a word w in two generators x and y with zero exponent sum on x.
 MS(n, w) = <x, y | x^{-1} y^n x = y^{n+1}, x = w>
 """
@@ -14,19 +14,19 @@ def generate_miller_schupp_presentations(n, max_w_len):
     """
     Generates Miller-Schupp presentations with fixed n >= 1 but all word lengths up to `max_w_len`.
     MS(n, w) = <x, y | x^{-1} y^n x = y^{n+1}, x = w>
-    # TODO: Explain the reason behind fixing n but letting lenw vary?
+
     If two presentations are related by freely and cyclically reducing x^{-1} w, or through a cyclic permutation 
     of generators in x^{-1}w, we keep only one presentation.
     An example of the latter case: we keep only one of x^{-1} y x^{-1} y^2 x^2 and  x^{-1} y^2 x^2 x^{-1} y.
 
     Parameters: 
     n (int): n of Miller-Schupp series 
-    max_w_len (an int): Maximum word-length of w of Miller-Schupp series"
+    max_w_len (int): Maximum word-length of w of Miller-Schupp series"
 
     Returns:
     dict: A dictionary with the following structure:
         'lenw' (int): The length of word w.
-        'presentations (list)': A list of presentations with fixed (n, length(w)).
+        'presentations (list)': A list of all presentations with fixed (n, length(w)).
 
     """
     assert n >= 1 and max_w_len >= 1, f"expect n >= 1 and max_w_len >=1 ; got n = {n}, max_w_len = {max_w_len}"

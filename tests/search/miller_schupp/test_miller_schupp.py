@@ -1,8 +1,33 @@
-from rlformath.search.miller_schupp.miller_schupp import trivialize_miller_schupp_through_search
+import pytest 
+import numpy as np
+from rlformath.search.miller_schupp.miller_schupp import trivialize_miller_schupp_through_search, generate_miller_schupp_presentations
 from rlformath.search.greedy import greedy_search
-from rlformath.search.breadth_first import bfs
 
 # TODO: write more tests involving more ranges of n, w_len and search_fn.
+
+@pytest.mark.parametrize("n, max_w_len", [(n, max_w_len) for n in range(1, 4) for max_w_len in range(1, 4)])
+def test_generate_miller_schupp_presentations(n, max_w_len):
+    ms_presentations = generate_miller_schupp_presentations(n=n, max_w_len=max_w_len)
+    assert isinstance(ms_presentations, dict), f"expected ms_presentations to be a dict; got {type(ms_presentations)}"
+    assert list(ms_presentations.keys()) == list(range(1, max_w_len + 1)), f"expect output dict to have a key for each value of w_len in range [1, max_w_len]; got {ms_presentations.keys()}"
+
+    for w_len in range(1, max_w_len + 1):
+        for presentation in ms_presentations[w_len]:
+            max_relator_length = len(presentation) // 2
+            relator1 = presentation[:max_relator_length]
+            relator2 = presentation[max_relator_length:]
+            assert np.count_nonzero(relator1) == 2 * n + 3, f"expect relator 1 to have length = {2 * n + 3}; got {np.count_nonzero(relator1)}"
+            assert relator2[0] == -1, f"expect the first letter in relator 2 to be -1; got {relator2[0]}"
+
+
+def test_number_of_miller_schupp_presentations():
+    ms_presentations = generate_miller_schupp_presentations(n=1, max_w_len=7)
+    total_number_of_presentations = sum([len(x) for x in ms_presentations.values()])
+    assert len(ms_presentations[1]) == 2, f"expect 2 presentations for w_len = 1; got {len(ms_presentations[1])}"
+    assert len(ms_presentations[2]) == 2, f"expect 2 presentations for w_len = 2; got {len(ms_presentations[2])}"
+    assert len(ms_presentations[3]) == 2, f"expect 3 presentations for w_len = 2; got {len(ms_presentations[3])}"
+    assert total_number_of_presentations == 170, f"expect got {total_number_of_presentations}"
+
 
 def test_trivialize_miller_schupp_through_greedy_search():
 
