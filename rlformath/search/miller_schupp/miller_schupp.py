@@ -2,6 +2,12 @@
 Applies a search algorithm of your choice to presentations of Miller-Schupp series with specified n and length(w) values.
 Miller-Schupp presentations are labelled by an integer n >= 1 and a word w in two generators x and y with zero exponent sum on x.
 MS(n, w) = <x, y | x^{-1} y^n x = y^{n+1}, x = w>
+
+Example:
+To peform greedy search on presentations of Miller-Schupp series with n in [3, 5] and length(w) in [2, 3], do
+python -u rlformath/search/miller_schupp/miller_schupp.py --min-n=3 --max-n=5 --min-w-len=2 --max-w-len=3 --search-fn=greedy
+
+See txt files in "data" subfolder to see the results.
 """
 
 import os
@@ -69,6 +75,7 @@ def generate_miller_schupp_presentations(n, max_w_len):
     return lenw_to_presentations_dict
 
 def write_list_to_text_file(list, filepath):
+    # A helper function to write a list to a text file.
     if not filepath.endswith(".txt"):
         filepath = filepath + ".txt"
     with open(filepath, 'w') as f:
@@ -82,7 +89,34 @@ def trivialize_miller_schupp_through_search(min_n,
                                             max_nodes_to_explore, 
                                             search_fn, 
                                             write_output_to_file=False):
-    
+    """
+    Applies a search function to Miller-Schupp presentations of varying sizes.
+
+    This function generates Miller-Schupp presentations for values of `n` in the range [min_n, max_n] 
+    and word lengths in the range [min_w_len, max_w_len]. It then applies the provided `search_fn` 
+    to each presentation to determine if it is solved or not.
+
+    Parameters:
+    - min_n (int): The minimum value of `n` for which presentations are generated.
+    - max_n (int): The maximum value of `n` for which presentations are generated.
+    - min_w_len (int): The minimum word length of w for presentations.
+    - max_w_len (int): The maximum word length of w for presentations.
+    - max_nodes_to_explore (int): The maximum number of nodes to explore in the search function.
+    - search_fn (function): The search function to apply to each presentation. Currently takes greedy_search or bfs.
+      It should return a tuple (solved, path) where `solved` is a boolean indicating if the presentation was solved, 
+      and `path` is the path taken during the search.
+    - write_output_to_file (bool, optional): If True, writes the solved presentations, unsolved presentations, 
+      and paths to files. Defaults to False.
+
+    Returns:
+    - tuple: A tuple containing three lists:
+        - solved_rels (list): A list of solved presentations.
+        - unsolved_rels (list): A list of unsolved presentations.
+        - solved_paths (list): A list of paths for solved presentations.
+    """
+
+    assert search_fn.__name__ in ["greedy_search", "bfs"], f"expect search_fn to be greedy or bfs; got {search_fn.__name__}"
+
     rels = {}
 
     for n in range(min_n, max_n + 1):
@@ -114,12 +148,15 @@ def trivialize_miller_schupp_through_search(min_n,
         write_list_to_text_file(list=solved_rels, filepath=filepath_base + "_solved")
         write_list_to_text_file(list=unsolved_rels, filepath=filepath_base + "_unsolved")
         write_list_to_text_file(list=solved_paths, filepath=filepath_base + "_paths")
+        print(f"""saved output in {dirname} with filenames: 
+                {filename_base + "_solved"}
+                {filename_base + "_unsolved"}
+                {filename_base + "_paths"}""")
 
     return solved_rels, unsolved_rels, solved_paths
 
 
 if __name__ == "__main__":
-    # TODO: change output file path (so that it lies in data) and names so that it specifies which search algorithm was used.
     def parse_args():
         parser = argparse.ArgumentParser()
         parser.add_argument(
@@ -153,27 +190,27 @@ if __name__ == "__main__":
             help="Maximum number of nodes to explore during tree search.",
         )
         parser.add_argument(
-            "--search-algorithm",
+            "--search-fn",
             type=str,
             default="greedy",
-            help="the name of this experiment",
+            help="the name of the search function; greedy or bfs",
         )
         args = parser.parse_args()
         return args
     
     args = parse_args()
-    assert args.search_algorithm in ["greedy", "bfs"], f"expect search-algorithm to be greedy or bfs; got {args.search_algorithm}"
+    assert args.search_fn in ["greedy", "bfs"], f"expect search-algorithm to be greedy or bfs; got {args.search_fn}"
     assert args.min_n <= args.max_n, f"min_n cannot be greater than max_n"
     assert args.min_w_len <= args.max_w_len, f"min_w_len cannot be greater than max_w_len"
 
-    if args.search_algorithm == "greedy":
+    if args.search_fn == "greedy":
         from rlformath.search.greedy import greedy_search
         search_fn = greedy_search
-    elif args.search_algorithm == "bfs":
+    elif args.search_fn == "bfs":
         from rlformath.search.breadth_first import bfs
         search_fn = bfs
     else:
-        raise ValueError(f"Unsupported search algorithm: {args.search_algorithm}; expect greedy or bfs")
+        raise ValueError(f"Unsupported search algorithm: {args.search_fn}; expect greedy or bfs")
 
     solved_rels, unsolved_rels, solved_paths = trivialize_miller_schupp_through_search(
         min_n = args.min_n,
@@ -184,7 +221,3 @@ if __name__ == "__main__":
         search_fn=search_fn,
         write_output_to_file=True,
     )
-
-    print(solved_rels)
-    print(unsolved_rels)
-    print(solved_paths)
