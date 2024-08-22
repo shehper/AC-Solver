@@ -61,6 +61,7 @@ def generate_miller_schupp_presentations(n, max_w_len):
                 continue
 
             # if x^{-1} w is a cyclic permutation of x^{-1}w', only keep one of the two.
+            # TODO: the following code can be cleaned up a bit
             relator2 = list(relator2)
             lenw = len(relator2) - 1
             if tuple(relator2) not in seen:

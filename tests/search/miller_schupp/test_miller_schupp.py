@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from rlformath.search.miller_schupp.miller_schupp import trivialize_miller_schupp_through_search, generate_miller_schupp_presentations
 from rlformath.search.greedy import greedy_search
+from rlformath.search.breadth_first import bfs
 
 # TODO: write more tests involving more ranges of n, w_len and search_fn.
 
@@ -117,36 +118,29 @@ def test_trivialize_miller_schupp_through_greedy_search():
     assert solved_paths == expected_solved_paths
 
 
-# def test_trivialize_miller_schupp_through_bfs():
+def test_trivialize_miller_schupp_through_bfs():
 
-#     solved_rels, unsolved_rels, solved_paths = trivialize_miller_schupp_through_search(
-#         min_n=1,
-#         max_n=2,
-#         min_w_len=1,
-#         max_w_len=2,
-#         search_fn=bfs,
-#     )
+    solved_rels, unsolved_rels, solved_paths = trivialize_miller_schupp_through_search(
+        min_n=1,
+        max_n=2,
+        min_w_len=1,
+        max_w_len=2,
+        max_nodes_to_explore=int(1e4),
+        search_fn=bfs,
+    )
 
-#     expected_solved_rels = [[-1, 2, 1, -2, -2, 0, 0, 0, 0, 0, 0, 0, -1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-#                             [-1, 2, 1, -2, -2, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-#                             [-1, 2, 1, -2, -2, 0, 0, 0, 0, 0, 0, 0, -1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-#                             [-1, 2, 1, -2, -2, 0, 0, 0, 0, 0, 0, 0, -1, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-#                             [-1, 2, 2, 1, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-#                             [-1, 2, 2, 1, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-#                             [-1, 2, 2, 1, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0], 
-#                             [-1, 2, 2, 1, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+    expected_solved_rels = [[-1, 2, 1, -2, -2, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-#     expected_unsolved_rels = []
+    expected_unsolved_rels = [[-1, 2, 1, -2, -2, 0, 0, 0, 0, 0, 0, 0, -1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [-1, 2, 1, -2, -2, 0, 0, 0, 0, 0, 0, 0, -1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [-1, 2, 1, -2, -2, 0, 0, 0, 0, 0, 0, 0, -1, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [-1, 2, 2, 1, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [-1, 2, 2, 1, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [-1, 2, 2, 1, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [-1, 2, 2, 1, -2, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, -1, -2, -2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
-#     expected_solved_paths = [[(0, 7), (6, 7), (9, 7), (4, 5), (10, 3), (3, 2)], 
-#                              [(0, 7), (2, 7), (8, 5), (6, 3), (4, 3), (3, 2)], 
-#                              [(0, 8), (9, 8), (4, 5), (7, 5), (3, 3), (2, 2)], 
-#                              [(0, 8), (2, 7), (8, 5), (4, 4), (3, 3), (3, 2)], 
-#                              [(0, 9), (8, 9), (6, 9), (2, 7), (6, 5), (12, 5), (4, 3), (1, 2)], 
-#                              [(0, 9), (2, 9), (8, 7), (6, 5), (6, 3), (4, 3), (3, 2)], 
-#                              [(0, 10), (9, 10), (4, 9), (12, 9), (7, 9), (4, 8), (7, 8), (2, 7), (8, 5), (3, 5), (9, 3), (2, 2)], 
-#                              [(0, 10), (2, 9), (8, 7), (6, 5), (4, 4), (3, 3), (3, 2)]]
+    expected_solved_paths = [[(0, 7), (2, 7), (8, 5), (1, 4), (6, 2)]]
 
-#     assert solved_rels == expected_solved_rels
-#     assert unsolved_rels == expected_unsolved_rels
-#     assert solved_paths == expected_solved_paths
+    assert solved_rels == expected_solved_rels
+    assert unsolved_rels == expected_unsolved_rels
+    assert solved_paths == expected_solved_paths
