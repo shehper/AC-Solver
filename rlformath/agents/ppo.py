@@ -2,33 +2,32 @@
 Implementation of PPO for AC graph.
 
 """
-# TODO: remove transformer as the network architecture or not?
-
 import math
 import numpy as np
+import torch
+from torch.distributions import Categorical
+from torch.optim import Adam
+from torch import nn
+from torch.optim import Adam
 import gymnasium as gym
 import argparse
-import torch
 import random
-import time
+import time, uuid
 import wandb
 from importlib import resources
 from distutils.util import strtobool
 from collections import deque
 from ast import literal_eval
 from multiprocessing import cpu_count
-from torch.distributions import Categorical
-from torch.optim import Adam
-from torch import nn
 from os import makedirs
 from os.path import dirname, abspath, basename, join
 from rlformath.envs.ac_env import ACEnv
-   
+
 # try:
-#   sys.path.insert(2, head_dir+'/transformer/model')
+#   sys.path.insert(2, head_dir+'/gpt_data_and_model/gpt')
 #   from model import GPTConfig, GPT
 # except: 
-#    print("transformer folder must lie in the second parent directory of this file, \
+#    print("gpt_data_and_model folder must lie in the second parent directory of this file, \
 #          it must contain gpt/model.py that defines a GPT model.")
    
 def parse_args():
@@ -95,6 +94,12 @@ def parse_args():
         help="total timesteps of the experiments")
     parser.add_argument("--learning-rate", type=float, default=2.5e-4,
         help="the learning rate of the optimizer")
+    parser.add_argument("--warmup-period", type=float, default=0.0,
+        help="the ratio of total-timesteps over which learning rate should be increased linearly starting from 0")
+    parser.add_argument("--lr-decay", type=str, default="linear",
+        help="how to decay lr. should be either linear or cosine.")
+    parser.add_argument("--min-lr-frac", type=float, default=0.0,
+        help="fraction of maximum learning rate to which to anneal it.")
     parser.add_argument("--num-envs", type=int, default=4,
         help="the number of parallel game environments.")
     parser.add_argument("--override-num-envs", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
@@ -167,11 +172,15 @@ def layer_init(layer, std=np.sqrt(2), bias_const=0.0):
     return layer
 
 def get_net(nodes_counts, stdev):
+    """
+    # TODO: perhaps should be called get_hidden_layers
+    """
     layers = [ layer_init(nn.Linear(nodes_counts[0], nodes_counts[1])), nn.Tanh()]
     for i in range(1, len(nodes_counts)-2): # layernum = 3
         layers.append(layer_init(nn.Linear(nodes_counts[i], nodes_counts[i+1])))
         layers.append(nn.Tanh())
     layers.append(layer_init(nn.Linear(nodes_counts[-2], nodes_counts[-1]), std=stdev))
+    print(layers)
     return layers
 
 class Agent(nn.Module):
@@ -181,11 +190,12 @@ class Agent(nn.Module):
         # As it is, we are using shared layers with self.use_transformer and unshared layers without.
         # That is why, the code below may seem confusing. I might fix that at a later time.
         if self.use_transformer:
-            gptconf['block_size'] = np.array(envs.single_observation_space.shape).prod()
-            gptconf = GPTConfig(**gptconf)
-            self.network = GPT(gptconf)
-            self.critic = layer_init(nn.Linear(6, 1), std=0.01)
-            self.actor = layer_init(nn.Linear(6, envs.single_action_space.n), std=1)
+            raise NotImplementedError("use-transformer=True requires importing transformer from nanoGPT") # TODO
+            # gptconf['block_size'] = np.array(envs.single_observation_space.shape).prod()
+            # gptconf = GPTConfig(**gptconf)
+            # self.network = GPT(gptconf)
+            # self.critic = layer_init(nn.Linear(6, 1), std=0.01)
+            # self.actor = layer_init(nn.Linear(6, envs.single_action_space.n), std=1)
         else:
             # nodes_counts: list of number of nodes in each layer that is not input or output layer
             self.critic_nodes = [np.array(envs.single_observation_space.shape).prod()] + nodes_counts + [1]
@@ -195,12 +205,10 @@ class Agent(nn.Module):
 
     def get_value(self, x):
         if self.use_transformer:
-            # TODO: Make this tokenizer step more efficient based on the comment below?
-            # At some point, I will want to remove the tokenizer and maybe redefine my 
-            # AC environment to have positive values only. For now, I am making this 
-            # change by hand in each step. It's needed because embedding only takes positive ints.
-            x = torch.where(x < 0, 2-x, x).to(dtype=torch.int64)
-            return self.critic(self.network(x)[0][:, -1, :]) 
+            raise NotImplementedError("use-transformer=True requires importing transformer from nanoGPT") # TODO
+            # # TODO: Make this tokenizer step more efficient based on the comment below?
+            # x = torch.where(x < 0, 2-x, x).to(dtype=torch.int64)
+            # return self.critic(self.network(x)[0][:, -1, :]) 
         else:
             return self.critic(x) 
 
@@ -234,7 +242,7 @@ def make_env(presentation, args):
 def get_pres(pres_number, max_length): 
     rel1, rel2 = to_list_of_lists(initial_states[pres_number])
     return to_array(rel1, rel2, max_length) 
-
+    
 def get_initial_states(states_type):
     # load initial presentations from a file. they are already sorted by n, i.e. by their hardness
     assert states_type in ["solved", "all"], "states-type must be solved, or all"
@@ -245,10 +253,44 @@ def get_initial_states(states_type):
         return initial_states
     except:
         return None
+    
+def get_curr_lr(n_update, 
+                lr_decay,
+                warmup,
+                max_lr,
+                min_lr,
+                total_updates):
 
+    # in the training loop, updates are 1-indexed. In this code, they are 0-indexed. 
+    n_update = n_update - 1
+    total_updates = total_updates - 1
+    
+    warmup_period_end = total_updates * warmup
+
+    if warmup_period_end > 0 and n_update <= warmup_period_end:
+        lrnow = max_lr * n_update / warmup_period_end
+    else:
+        if lr_decay == "linear":
+            slope = (max_lr - min_lr)/(warmup_period_end - total_updates)
+            intercept = max_lr - slope * warmup_period_end
+            lrnow = slope * n_update + intercept
+
+        elif lr_decay == "cosine":
+            cosine_arg = (n_update - warmup_period_end) / (total_updates - warmup_period_end) * math.pi
+            lrnow = min_lr + (max_lr - min_lr) * (1 + math.cos(cosine_arg)) / 2
+
+        else:
+            raise NotImplemented("only linear and cosine lr-schedules are available")    
+    return lrnow  
 
 if __name__ == '__main__':
+
     args = parse_args()
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
+    torch.backends.cudnn.deterministic = args.torch_deterministic
+
     if args.override_num_envs and cpu_count() > args.num_envs:
         if args.override_lr:
             args.learning_rate *= math.sqrt(cpu_count()/args.num_envs)
@@ -257,6 +299,10 @@ if __name__ == '__main__':
         args.num_envs = cpu_count()
     
     print(f"number of parallel envs: {args.num_envs}")
+
+    assert 0.0 <= args.warmup_period <= 1.0, "warmup period should be less than 1.0 as it is the fraction of total timesteps"
+    assert args.lr_decay in ["linear", "cosine"], f"lr-decay must be linear or cosine, not {args.lr_decay}. Other LR schedules not supported yet"
+    assert 0.0 <= args.min_lr_frac <= 1.0, "min-lr-frac is the fraction of maximum lr to which we anneal."
 
     # if initial states are to be loaded from a file, do that.
     if not args.fixed_init_state:
@@ -276,10 +322,6 @@ if __name__ == '__main__':
         success_record = {'solved': set(), 'unsolved': set(range(len(initial_states))) }
         ACMoves_hist = {}
 
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-    torch.manual_seed(args.seed)
-    torch.backends.cudnn.deterministic = args.torch_deterministic
 
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
@@ -311,10 +353,10 @@ if __name__ == '__main__':
     beta = None if args.is_loss_clip else args.beta
 
     if args.use_transformer:
-        run_name = f"{args.exp_name}_ppo_transformer_nl_{args.n_layer}_d_{args.n_embd}_{int(time.time())}"
+        run_name = f"{args.exp_name}_ppo_transformer_nl_{args.n_layer}_d_{args.n_embd}_{uuid.uuid4()}"
     else:
-        run_name = f"{args.exp_name}_ppo-ffn-nodes_{args.nodes_counts}_{int(time.time())}"
-    out_dir = f"{dirname(abspath(__file__))}/out/{run_name}"
+        run_name = f"{args.exp_name}_ppo-ffn-nodes_{args.nodes_counts}_{uuid.uuid4()}"
+    out_dir = f"out/{run_name}"
     makedirs(out_dir, exist_ok=True)
     if args.wandb_log:
         run = wandb.init(
@@ -336,8 +378,12 @@ if __name__ == '__main__':
 
         # Annealing the rate if instructed to do so.
         if args.anneal_lr:
-            frac = 1.0 - (update - 1.0) / num_updates
-            lrnow = frac * args.learning_rate
+            lrnow = get_curr_lr(n_update=update, 
+                                lr_decay=args.lr_decay,
+                                warmup=args.warmup_period,
+                                max_lr=args.learning_rate,
+                                min_lr=args.learning_rate * args.min_lr_frac,
+                                total_updates=num_updates)
             optimizer.param_groups[0]["lr"] = lrnow
 
         # collecting and recording data
@@ -386,7 +432,7 @@ if __name__ == '__main__':
                         # record and reset episode data
                         returns_queue.append(episodic_return[i])
                         lengths_queue.append(episodic_length[i])
-                        print(f"global_step={global_step}, episodic_return={episodic_return[i]}")
+                        #print(f"global_step={global_step}, episodic_return={episodic_return[i]}")
                         episode += 1
                         episodic_return[i], episodic_length[i] = 0, 0
 
@@ -397,18 +443,18 @@ if __name__ == '__main__':
                             curr_states[i] = max(states_processed) + 1
                         else:
                             # TODO: If states-type=all, first choose from all solved presentations then choose from unsolved presentations
-                            if success_record['unsolved'] and random.uniform(0, 1) > args.repeat_solved_prob:
+                            if len(success_record["solved"]) == 0 or \
+                                (success_record['unsolved'] and random.uniform(0, 1) > args.repeat_solved_prob):
                                 curr_states[i] = random.choice(list(success_record['unsolved'])) 
                             else:
                                 curr_states[i] = random.choice(list(success_record['solved']))
                         states_processed.add(curr_states[i])
                         next_obs[i] = get_pres(curr_states[i], args.max_length)
                         envs.envs[i].reset(options={'starting_state': next_obs[i]})
-                        print(f"Updating initial state of env {i} from {prev_state} to {curr_states[i]}")
+                        #print(f"Updating initial state of env {i} from {prev_state} to {curr_states[i]}")
 
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(done).to(device)
             
-        # TODO: maybe I should experiment with removing this code as well. Hmm. 
         if not args.norm_rewards: # if not normalizing rewards through a NormalizeRewards Wrapper, rescale rewards manually.
             rewards /= envs.envs[0].max_reward
             normalized_returns = np.array(returns_queue) / envs.envs[0].max_reward
