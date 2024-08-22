@@ -31,44 +31,42 @@ def generate_miller_schupp_presentations(n, max_w_len):
     """
     assert n >= 1 and max_w_len >= 1, f"expect n >= 1 and max_w_len >=1 ; got n = {n}, max_w_len = {max_w_len}"
 
-    rels = []
-    nrel = 2 * max(2 * n + 3, max_w_len + 1) + 2
-    rel1 = [-1] + [2] * n + [1] + [-2] * (n + 1) + [0] * (nrel - 2 * n - 3)
+    max_relator_length = 2 * max(2 * n + 3, max_w_len + 1) + 2
+    relator1 = [-1] + [2] * n + [1] + [-2] * (n + 1) + [0] * (max_relator_length - 2 * n - 3)
 
     seen = set()
-    out = {}
+    lenw_to_presentations_dict = {}
 
     for search_len in range(1, max_w_len + 1):
+        
         # iterate over all possible words of 1, 2, -1, -2 that have length = search_len
-        for rel in product([1, 2, -1, -2], repeat=search_len):
-            # only keep words where exponent sum of x is 0.
-            if sum(x for x in rel if abs(x) == 1) != 0:
+        for w in product([1, 2, -1, -2], repeat=search_len):
+        
+            # only keep words with exponent sum of x equal to 0
+            if sum(x for x in w if abs(x) == 1) != 0:
                 continue
 
-            # define rel2 = x^{-1}w -- the second relator of a Miller Schupp presentation.
-            rel2 = np.array([-1] + list(rel), dtype=np.int8)
-            # reduce x^{-1}w cyclically and freely by applying simplify(..., full=True) function from acenv.py
-            # TODO: why is max_relator_length = search_len + 1?
-            rel2, _ = simplify_relator(rel2, search_len + 1, cyclical=True, padded=False)
+            # reduce x^{-1}w freely and cyclically by applying simplify_relator(..., cyclical=True)
+            relator2 = np.array([-1] + list(w), dtype=np.int8)
+            relator2, _ = simplify_relator(relator2, search_len + 1, cyclical=True, padded=False)
 
-            rel2 = list(rel2)
-            # discard the case where simplified word = x^{-1}, for example, if w was x x^{-1}.
-            if rel2 == [-1]:
+            # if x^{-1} w = x^{-1}, don't consider as len(w) must be > 0
+            if np.array_equal(relator2, np.array([-1])):
                 continue
-
-            lenw = len(rel2) - 1
 
             # if x^{-1} w is a cyclic permutation of x^{-1}w', only keep one of the two.
-            if tuple(rel2) not in seen:
-                for i in range(len(rel2)):
-                    seen.add(tuple(rel2[i:] + rel2[:i]))
-                rel2 += [0] * (nrel - len(rel2))
+            relator2 = list(relator2)
+            lenw = len(relator2) - 1
+            if tuple(relator2) not in seen:
+                for i in range(len(relator2)):
+                    seen.add(tuple(relator2[i:] + relator2[:i]))
+                
+                if lenw not in lenw_to_presentations_dict:
+                    lenw_to_presentations_dict[lenw] = []
+                relator2 += [0] * (max_relator_length - len(relator2))
+                lenw_to_presentations_dict[lenw] += [relator1 + relator2]
 
-                if lenw not in out:
-                    out[lenw] = []
-                out[lenw] += [rel1 + rel2]
-
-    return out
+    return lenw_to_presentations_dict
 
 def write_list_to_text_file(list, filepath):
     if not filepath.endswith(".txt"):
