@@ -208,7 +208,8 @@ def load_initial_states_from_text_file(states_type):
     """
     assert states_type in ["solved", "all"], "states_type must be 'solved' or 'all'"
 
-    file_name = f'{states_type}_miller_schupp_presentations.txt'
+    file_name_prefix = "greedy_solved" if states_type == "solved" else "all"
+    file_name = f'{file_name_prefix}_presentations.txt'
     with resources.open_text('rlformath.search.miller_schupp.data', file_name) as file:
         initial_states = [literal_eval(line.strip()) for line in file]
 
