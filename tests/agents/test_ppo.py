@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import gymnasium as gym
 from argparse import Namespace
-from rlformath.agents.utils import convert_relators_to_presentation, to_list_of_lists, initialize_layer, build_network, Agent, make_env, get_curr_lr
+from rlformath.agents.utils import initialize_layer, build_network, Agent, make_env, get_curr_lr, convert_relators_to_presentation
 from rlformath.agents.ppo import parse_args
 from rlformath.envs.ac_env import ACEnv
 
@@ -22,7 +22,7 @@ def sample_args():
         fixed_init_state=False,
         states_type="all",
         repeat_solved_prob=0.25,
-        max_length=7,
+        max_relator_length=7,
         relator1=[1, 1, -2, -2, -2],
         relator2=[1, 2, 1, -2, -1, -2],
         max_env_steps=2000,
@@ -74,16 +74,10 @@ def test_parse_args():
 def test_convert_relators_to_presentation():
     rel1 = [1, 1, -2, -2, -2]
     rel2 = [1, 2, 1, -2, -1, -2]
-    max_length = 7
-    arr = convert_relators_to_presentation(rel1, rel2, max_length)
+    max_relator_length = 7
+    arr = convert_relators_to_presentation(rel1, rel2, max_relator_length)
     expected_array = np.array([1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0], dtype=np.int8)
     assert np.array_equal(arr, expected_array)
-
-# Test to_list_of_lists function
-def test_to_list_of_lists():
-    pres = [1, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0]
-    lists = to_list_of_lists(pres)
-    assert lists == [[1], [2]]
 
 # Test layer initialization function
 def test_initialize_layer():
@@ -102,13 +96,13 @@ def test_get_net():
 
 # Test Agent class initialization
 def test_agent_initialization(sample_args):
-    envs = gym.vector.SyncVectorEnv([make_env(convert_relators_to_presentation(sample_args.relator1, sample_args.relator2, sample_args.max_length), sample_args)])
+    envs = gym.vector.SyncVectorEnv([make_env(convert_relators_to_presentation(sample_args.relator1, sample_args.relator2, sample_args.max_relator_length), sample_args)])
     agent = Agent(envs, sample_args.nodes_counts)
     assert isinstance(agent, Agent)
 
 # Test Agent methods get_value and get_action_and_value
 def test_agent_methods(sample_args):
-    envs = gym.vector.SyncVectorEnv([make_env(convert_relators_to_presentation(sample_args.relator1, sample_args.relator2, sample_args.max_length), sample_args)])
+    envs = gym.vector.SyncVectorEnv([make_env(convert_relators_to_presentation(sample_args.relator1, sample_args.relator2, sample_args.max_relator_length), sample_args)])
     agent = Agent(envs, sample_args.nodes_counts)
 
     obs = torch.randn((sample_args.num_steps, sample_args.num_envs) + envs.single_observation_space.shape)
@@ -140,7 +134,7 @@ def test_get_curr_lr(lr_decay, warmup, n_update, expected_lr, sample_args):
 
 # Test make_env function
 def test_make_env(sample_args):
-    presentation = convert_relators_to_presentation(sample_args.relator1, sample_args.relator2, sample_args.max_length)
+    presentation = convert_relators_to_presentation(sample_args.relator1, sample_args.relator2, sample_args.max_relator_length)
     env_thunk = make_env(presentation, sample_args)
     env = env_thunk()
     if sample_args.clip_rewards:

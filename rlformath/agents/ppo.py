@@ -16,8 +16,8 @@ from distutils.util import strtobool
 from collections import deque
 from os import makedirs
 from os.path import basename, join
-from rlformath.agents.utils import convert_relators_to_presentation, Agent, make_env, \
-      get_pres, get_curr_lr, load_initial_states_from_text_file
+from rlformath.agents.utils import Agent, make_env, \
+      get_curr_lr, load_initial_states_from_text_file, convert_relators_to_presentation, change_max_relator_length_of_presentation
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -46,7 +46,7 @@ def parse_args():
         help="The type of states that must be loaded. Can take values solved, unsolved, or all.")
     parser.add_argument("--repeat-solved-prob", type=float, default=0.25, 
         help="Probability of choosing an already solved state after all states have been attempted at least once.")
-    parser.add_argument("--max-length", type=int, default=7,
+    parser.add_argument("--max-relator-length", type=int, default=7,
         help="the maximum length a relator is allowed to take when acted by AC moves")
     parser.add_argument('--relator1', nargs='+', type=int, default=[1, 1, -2, -2, -2], 
         help="first relator of the initial presentation (default: AK(2)).")
@@ -134,22 +134,45 @@ if __name__ == '__main__':
     torch.manual_seed(args.seed)
     torch.backends.cudnn.deterministic = args.torch_deterministic
 
-    # if initial states are to be loaded from a file, do that.
-    if not args.fixed_init_state:
-        initial_states = load_initial_states_from_text_file(states_type=args.states_type)
-        
-    # initiate envs
-    if args.fixed_init_state: 
-        presentation = convert_relators_to_presentation(args.relator1, args.relator2, args.max_length)
+    ## initialize environments
+    if args.fixed_init_state:
+        # Convert provided relators to a presentation if a fixed initial state is used
+        presentation = convert_relators_to_presentation(args.relator1, args.relator2, args.max_relator_length)
+
+        # Create a vectorized environment with the same presentation for all environments
         envs = gym.vector.SyncVectorEnv([make_env(presentation, args) for _ in range(args.num_envs)])
     else:
-        args.max_length = 36 # update maxlength to max(max(18, 4n+2)) for 1 <= n <= 7 
-        assert args.num_envs <= len(initial_states), "modify initiation of envs if num_envs > number of initial states"
-        envs = gym.vector.SyncVectorEnv([make_env(get_pres(initial_states, i, args.max_length), args) for i in range(args.num_envs)])
-        # keep a record of current initial states and all solved/unsolved states
-        curr_states = list(range(args.num_envs)) # states being processed at the moment
-        states_processed = set(curr_states) # set of states either under process or have been processed
-        success_record = {'solved': set(), 'unsolved': set(range(len(initial_states))) }
+        # Load initial states from a text file based on the specified states type
+        initial_states = load_initial_states_from_text_file(states_type=args.states_type)
+        
+        # Ensure the number of environments does not exceed the number of available initial states
+        assert args.num_envs <= len(initial_states), "Expect number of environments to be less than number of distinct initial states for now; \
+                                                     relaxing this condition is easy. Just edit the definition of envs below." # TODO
+        
+        # Set the maximum relator length; default is 36, which is derived from max(4n+2) for 1 <= n <= 7
+        # This can be modified for experimentation
+        args.max_relator_length = 36
+        initial_states = [
+            change_max_relator_length_of_presentation(initial_state, args.max_relator_length)
+            for initial_state in initial_states]
+
+        # Create a vectorized environment, each initialized with a different presentation from initial_states
+        envs = gym.vector.SyncVectorEnv([
+            make_env(presentation=initial_states[i], args=args) 
+            for i in range(args.num_envs)
+        ])
+
+        # Track the current states being processed and keep a record of processed states
+        curr_states = list(range(args.num_envs))  # States currently being processed
+        states_processed = set(curr_states)       # Set of states that have been or are being processed
+        
+        # Record successes and failures for states
+        success_record = {
+            'solved': set(),                       # States that have been successfully solved
+            'unsolved': set(range(len(initial_states)))  # States that have not yet been solved
+        }
+
+        # History of actions/moves taken in the AC algorithm
         ACMoves_hist = {}
 
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
@@ -270,7 +293,7 @@ if __name__ == '__main__':
                             else:
                                 curr_states[i] = random.choice(list(success_record['solved']))
                         states_processed.add(curr_states[i])
-                        next_obs[i] = get_pres(initial_states, curr_states[i], args.max_length)
+                        next_obs[i] = initial_states[curr_states[i]]
                         envs.envs[i].reset(options={'starting_state': next_obs[i]})
                         #print(f"Updating initial state of env {i} from {prev_state} to {curr_states[i]}")
 

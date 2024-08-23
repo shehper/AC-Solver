@@ -129,7 +129,6 @@ def simplify_presentation(presentation, max_relator_length, lengths_of_words, cy
 
     return presentation, lengths_of_words
 
-
 def is_array_valid_presentation(array):
     """
     Checks whether a given Numpy Array is a valid presentation or not.
@@ -168,7 +167,6 @@ def is_array_valid_presentation(array):
     ])
 
     return is_valid
-
 
 def is_presentation_trivial(presentation):
     """
@@ -444,16 +442,16 @@ class ACEnv(Env):
     def __init__(self, config):
 
         self.n = config["n_gen"]
-        self.max_length = config["max_length"]
+        self.max_relator_length = config["max_relator_length"]
         self.state = config["init_presentation"]
         self.initial_state = np.copy(config["init_presentation"])
         self.max_count_steps = config["max_count_steps"]
         self.count_steps = 0
         self.lengths = [
-            np.count_nonzero(self.state[i * self.max_length : (i + 1) * self.max_length])
+            np.count_nonzero(self.state[i * self.max_relator_length : (i + 1) * self.max_relator_length])
             for i in range(self.n)
         ]
-        self.max_reward = self.max_count_steps * self.max_length * self.n
+        self.max_reward = self.max_count_steps * self.max_relator_length * self.n
         self.actions = []
 
         self.inverse_actions = {
@@ -507,11 +505,11 @@ class ACEnv(Env):
             self.supermoves = None
             self.action_space = Discrete(12)
 
-        low = np.ones(self.max_length * self.n, dtype=np.int8) * (-self.n)
-        high = np.ones(self.max_length * self.n, dtype=np.int8) * (self.n)
+        low = np.ones(self.max_relator_length * self.n, dtype=np.int8) * (-self.n)
+        high = np.ones(self.max_relator_length * self.n, dtype=np.int8) * (self.n)
         self.observation_space = Box(low, high, dtype=np.int8)
 
-        if len(self.state) != 2 * self.max_length:
+        if len(self.state) != 2 * self.max_relator_length:
             print("There is an issue with length of relators.")
 
     def step(self, action):
@@ -521,12 +519,12 @@ class ACEnv(Env):
         if self.supermoves and action + 1 in self.supermoves.keys():
             for a in self.supermoves[action + 1]:
                 self.state, self.lengths = ACMove(
-                    a, self.state, self.max_length, self.lengths
+                    a, self.state, self.max_relator_length, self.lengths
                 )
         else:
             # TODO: I should try it with cyclical = False
             self.state, self.lengths = ACMove(
-                action + 1, self.state, self.max_length, self.lengths
+                action + 1, self.state, self.max_relator_length, self.lengths
             )
 
         done = sum(self.lengths) == 2
@@ -550,7 +548,7 @@ class ACEnv(Env):
             else np.copy(self.initial_state)
         )
         self.lengths = [
-            np.count_nonzero(self.state[i * self.max_length : (i + 1) * self.max_length])
+            np.count_nonzero(self.state[i * self.max_relator_length : (i + 1) * self.max_relator_length])
             for i in range(self.n)
         ]
         self.count_steps = 0
