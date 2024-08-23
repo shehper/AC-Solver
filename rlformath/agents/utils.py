@@ -37,6 +37,17 @@ def convert_relators_to_presentation(relator1, relator2, max_relator_length):
     return np.array(padded_relator1 + padded_relator2, dtype=np.int8)
 
 def change_max_relator_length_of_presentation(presentation, new_max_length):
+    """
+    Adjusts the maximum length of the relators in a given presentation by reformatting it 
+    with a new specified maximum length.
+
+    Parameters:
+    presentation (Numpy Array): The current presentation as a list, where relators are concatenated and padded with zeros.
+    new_max_length (int): The new maximum length for each relator in the presentation.
+
+    Returns:
+    Numpy Array: The new presentation with relators adjusted to the specified maximum length.
+    """
 
     old_max_length = len(presentation) // 2
 
@@ -48,7 +59,6 @@ def change_max_relator_length_of_presentation(presentation, new_max_length):
 
     new_presentation = convert_relators_to_presentation(relator1=relator1, relator2=relator2, max_relator_length=new_max_length)
     return new_presentation
-
 
 def initialize_layer(layer, std=np.sqrt(2), bias_const=0.0):
     """
@@ -158,7 +168,6 @@ def make_env(presentation, args):
     Returns:
     function: A thunk (a function with no arguments) that initializes and returns the environment when called.
     """
-    
 
     def thunk():
 
