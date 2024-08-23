@@ -441,7 +441,7 @@ class ACEnv(Env):
     # we give a large maximum reward.
     def __init__(self, config):
 
-        self.n = config["n_gen"]
+        self.n_gen = 2
         self.max_relator_length = config["max_relator_length"]
         self.state = config["init_presentation"]
         self.initial_state = np.copy(config["init_presentation"])
@@ -449,9 +449,9 @@ class ACEnv(Env):
         self.count_steps = 0
         self.lengths = [
             np.count_nonzero(self.state[i * self.max_relator_length : (i + 1) * self.max_relator_length])
-            for i in range(self.n)
+            for i in range(self.n_gen)
         ]
-        self.max_reward = self.max_count_steps * self.max_relator_length * self.n
+        self.max_reward = self.max_count_steps * self.max_relator_length * self.n_gen
         self.actions = []
 
         self.inverse_actions = {
@@ -505,8 +505,8 @@ class ACEnv(Env):
             self.supermoves = None
             self.action_space = Discrete(12)
 
-        low = np.ones(self.max_relator_length * self.n, dtype=np.int8) * (-self.n)
-        high = np.ones(self.max_relator_length * self.n, dtype=np.int8) * (self.n)
+        low = np.ones(self.max_relator_length * self.n_gen, dtype=np.int8) * (-self.n_gen)
+        high = np.ones(self.max_relator_length * self.n_gen, dtype=np.int8) * (self.n_gen)
         self.observation_space = Box(low, high, dtype=np.int8)
 
         if len(self.state) != 2 * self.max_relator_length:
@@ -549,7 +549,7 @@ class ACEnv(Env):
         )
         self.lengths = [
             np.count_nonzero(self.state[i * self.max_relator_length : (i + 1) * self.max_relator_length])
-            for i in range(self.n)
+            for i in range(self.n_gen)
         ]
         self.count_steps = 0
         self.actions = []

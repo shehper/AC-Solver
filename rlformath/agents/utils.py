@@ -172,7 +172,6 @@ def make_env(presentation, args):
     def thunk():
 
         env_config = {
-            'n_gen': 2,
             'init_presentation': presentation,
             'max_relator_length': args.max_relator_length,
             'max_count_steps': args.max_env_steps,
