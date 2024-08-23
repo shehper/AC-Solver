@@ -19,7 +19,7 @@ from multiprocessing import cpu_count
 from os import makedirs
 from os.path import dirname, abspath, basename, join
 from rlformath.agents.ppo import to_array, Agent, make_env, \
-      get_pres, get_curr_lr, get_initial_states
+      get_pres, get_curr_lr, load_initial_states_from_text_file
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -61,21 +61,10 @@ def parse_args():
     
     # Architecture specific arguments
     # TODO: Include a shared layer vs not shared layer argument
-    parser.add_argument("--use-transformer", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
-        help="use Transformer as an architecture or not. When False, a feed-forward-network with\
-            layers containing number of nodes given by nodes-counts is used.")
     parser.add_argument("--nodes-counts", nargs='+', type=int, default=[256, 256],
         help="list of length=number of hidden layers. ith element is the number of nodes \
             in the ith hidden layer.")
-    parser.add_argument("--n-layer", type=int, default=4, 
-        help="number of multi-head attention blocks in a Transformer")
-    parser.add_argument("--n-head", type=int, default=4, 
-        help="number of heads in multi-head attention ")  
-    parser.add_argument("--n-embd", type=int, default=128, 
-        help="embedding dimension of GPT")  
-    parser.add_argument("--dropout", type=float, default=0.0, 
-        help="value of dropout probability for the Transformer")
-
+    
     # Algorithm specific arguments
     parser.add_argument('--is-loss-clip', type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
         help='loss is clip loss if True else KL-penalty loss')
@@ -93,10 +82,6 @@ def parse_args():
         help="fraction of maximum learning rate to which to anneal it.")
     parser.add_argument("--num-envs", type=int, default=4,
         help="the number of parallel game environments.")
-    parser.add_argument("--override-num-envs", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
-        help="Toggle whether args.num_envs should be overwritten by the number of CPU cores, when cpu_count() > args.num_envs.")
-    parser.add_argument("--override-lr", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
-        help="Toggle whether args.learning-rate should be adjusted by sqrt(cpu_count()/args.num_envs) when num_envs is overridden.")
     parser.add_argument("--num-steps", type=int, default=2000,
         help="the number of steps to run in each environment per policy rollout")
     parser.add_argument("--anneal-lr", type=lambda x: bool(strtobool(x)), default=True, nargs="?", const=True,
@@ -133,9 +118,14 @@ def parse_args():
         help="the target KL divergence threshold")
     parser.add_argument("--epsilon", type=float, default=0.00001,
         help="epsilon hyperparameter for PyTorch Adam Optimizer")
+    
     args = parser.parse_args()
     args.batch_size = int(args.num_envs * args.num_steps)
     args.minibatch_size = int(args.batch_size // args.num_minibatches)
+    
+    assert 0.0 <= args.warmup_period <= 1.0, "warmup period should be less than 1.0 as it is the fraction of total timesteps"
+    assert args.lr_decay in ["linear", "cosine"], f"lr-decay must be linear or cosine, not {args.lr_decay}. Other LR schedules not supported yet"
+    assert 0.0 <= args.min_lr_frac <= 1.0, "min-lr-frac is the fraction of maximum lr to which we anneal."
     return args
 
 if __name__ == '__main__':
@@ -146,22 +136,9 @@ if __name__ == '__main__':
     torch.manual_seed(args.seed)
     torch.backends.cudnn.deterministic = args.torch_deterministic
 
-    if args.override_num_envs and cpu_count() > args.num_envs:
-        if args.override_lr:
-            args.learning_rate *= math.sqrt(cpu_count()/args.num_envs)
-            print(f"Updating learning rate to {args.learning_rate} to make use of Adam batch-size invariance.")
-        print(f"Updating number of parallel environments from {args.num_envs} to {cpu_count()}")
-        args.num_envs = cpu_count()
-    
-    print(f"number of parallel envs: {args.num_envs}")
-
-    assert 0.0 <= args.warmup_period <= 1.0, "warmup period should be less than 1.0 as it is the fraction of total timesteps"
-    assert args.lr_decay in ["linear", "cosine"], f"lr-decay must be linear or cosine, not {args.lr_decay}. Other LR schedules not supported yet"
-    assert 0.0 <= args.min_lr_frac <= 1.0, "min-lr-frac is the fraction of maximum lr to which we anneal."
-
     # if initial states are to be loaded from a file, do that.
     if not args.fixed_init_state:
-        initial_states = get_initial_states(states_type=args.states_type)
+        initial_states = load_initial_states_from_text_file(states_type=args.states_type)
         
     # initiate envs
     if args.fixed_init_state: 
@@ -177,15 +154,9 @@ if __name__ == '__main__':
         success_record = {'solved': set(), 'unsolved': set(range(len(initial_states))) }
         ACMoves_hist = {}
 
-
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
-
-    gpt_args = dict(n_layer=args.n_layer, n_head=args.n_head, n_embd=args.n_embd, 
-                        block_size=2*args.max_length, bias=True, vocab_size=6, 
-                        dropout=args.dropout) 
     
-    agent = Agent(envs, args.nodes_counts, gptconf=gpt_args,
-                  use_transformer=args.use_transformer).to(device)
+    agent = Agent(envs, args.nodes_counts).to(device)
     optimizer = Adam(agent.parameters(), lr=args.learning_rate, eps=args.epsilon)
 
     obs = torch.zeros((args.num_steps, args.num_envs) + envs.single_observation_space.shape).to(device)
@@ -207,10 +178,7 @@ if __name__ == '__main__':
     round1_complete = False # whether we have already chosen each element of initial_states at least once to initiate rollout
     beta = None if args.is_loss_clip else args.beta
 
-    if args.use_transformer:
-        run_name = f"{args.exp_name}_ppo_transformer_nl_{args.n_layer}_d_{args.n_embd}_{uuid.uuid4()}"
-    else:
-        run_name = f"{args.exp_name}_ppo-ffn-nodes_{args.nodes_counts}_{uuid.uuid4()}"
+    run_name = f"{args.exp_name}_ppo-ffn-nodes_{args.nodes_counts}_{uuid.uuid4()}"
     out_dir = f"out/{run_name}"
     makedirs(out_dir, exist_ok=True)
     if args.wandb_log:
@@ -348,10 +316,9 @@ if __name__ == '__main__':
         
         for epoch in range(args.update_epochs):
             np.random.shuffle(b_inds)
-            # 0, 1024, 2048, 3072
-            for start in range(0, args.batch_size, args.minibatch_size): #start of minbatch: 0, m, 2*m, ..., (n-1)*m; here m=1024, n = 4
-                end = start + args.minibatch_size # end of minibatch: m, 2*m, ..., n*m; here m=1024, n = 4
-                mb_inds = b_inds[start:end] # indices of minibatch
+            for start in range(0, args.batch_size, args.minibatch_size): 
+                end = start + args.minibatch_size 
+                mb_inds = b_inds[start:end]
 
                 _, newlogprob, entropy, newvalue = agent.get_action_and_value(b_obs[mb_inds], b_actions.long()[mb_inds]) #.long() converts dtype to int64
                 logratio = newlogprob - b_logprobs[mb_inds] 

@@ -27,7 +27,6 @@ def sample_args():
         relator2=[1, 2, 1, -2, -1, -2],
         max_env_steps=2000,
         use_supermoves=False,
-        use_transformer=False,
         nodes_counts=[256, 256],
         is_loss_clip=True,
         beta=0.9,
@@ -104,13 +103,13 @@ def test_get_net():
 # Test Agent class initialization
 def test_agent_initialization(sample_args):
     envs = gym.vector.SyncVectorEnv([make_env(to_array(sample_args.relator1, sample_args.relator2, sample_args.max_length), sample_args)])
-    agent = Agent(envs, sample_args.nodes_counts, gptconf={}, use_transformer=sample_args.use_transformer)
+    agent = Agent(envs, sample_args.nodes_counts)
     assert isinstance(agent, Agent)
 
 # Test Agent methods get_value and get_action_and_value
 def test_agent_methods(sample_args):
     envs = gym.vector.SyncVectorEnv([make_env(to_array(sample_args.relator1, sample_args.relator2, sample_args.max_length), sample_args)])
-    agent = Agent(envs, sample_args.nodes_counts, gptconf={}, use_transformer=sample_args.use_transformer)
+    agent = Agent(envs, sample_args.nodes_counts)
 
     obs = torch.randn((sample_args.num_steps, sample_args.num_envs) + envs.single_observation_space.shape)
 
