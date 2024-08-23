@@ -12,26 +12,18 @@ from gymnasium.spaces import Discrete, Box
 # rels: presentation
 # lengths: relator_lengths # TODO: is this actually needed?
 # i, j: 
-
 # TODO: specify in many places that what's called AC here are really AC-prime moves.
 # TODO: change lengths to word_lengths everywhere.
 # TODO: lengths should probably not be input or outputted into all of the functions anyway.
 # There should be a separate function that computes lengths of words given a presentation.
-
 # functions: len_words, simplify, full_simplify, is_trivial, trivial_states, concat, conjugate
 # TODO: len_words should just be replaced with np.count_nonzero() everywhere in the codebase. 
 # simplify should be called simplify_relator; I don't know if we ever need padded=False so may well remove that
 # also maybe full should be called 'cyclic' or something like that.
-# 
 
 # TODO: there should be tests for simplify, full_simplify, is_trivial, trivial_states, concat and conjugate.
-
 # TODO: fix indentation. Why is it half as usual here?
 # computes number of nonzero elements of a Numpy array
-def len_words(relators):
-    # TODO: this function should be removed after all references of len_words have been removed.
-    return np.count_nonzero(relators)
-
 # TODO: max_relator_length should be needed only in conjugate and concat, I think. 
 # TODO: lengths_of_words should not be given as a parameter anywhere. We should just compute length of word when we need to. 
 # Perhaps there can be a separate function for that. 
@@ -57,7 +49,8 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
 
 
     Returns: (simplified_relator, relator_length)
-    simplified_relator is the simplified relator, and relator_length is the length of this word.
+    simplified_relator is a Numpy array representing the simplified relator
+    relator_length is the length of simplified word.
     """
     
     assert isinstance(relator, np.ndarray), "expect relator to be a numpy array"
@@ -151,6 +144,10 @@ def is_array_valid_presentation(array):
     """
     
     # for two generators and relators, the length of the presentation should be even.
+    assert isinstance(array, (list, np.ndarray)), f"array must be a list or a numpy array, got {type(array)}"
+    if isinstance(array, list):
+        array = np.array(array)
+
     is_length_valid = len(array) % 2 == 0
 
     max_relator_length = len(array) // 2
@@ -453,7 +450,7 @@ class ACEnv(Env):
         self.max_count_steps = config["max_count_steps"]
         self.count_steps = 0
         self.lengths = [
-            len_words(self.state[i * self.max_length : (i + 1) * self.max_length])
+            np.count_nonzero(self.state[i * self.max_length : (i + 1) * self.max_length])
             for i in range(self.n)
         ]
         self.max_reward = self.max_count_steps * self.max_length * self.n
@@ -553,7 +550,7 @@ class ACEnv(Env):
             else np.copy(self.initial_state)
         )
         self.lengths = [
-            len_words(self.state[i * self.max_length : (i + 1) * self.max_length])
+            np.count_nonzero(self.state[i * self.max_length : (i + 1) * self.max_length])
             for i in range(self.n)
         ]
         self.count_steps = 0

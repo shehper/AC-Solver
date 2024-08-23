@@ -2,7 +2,6 @@
 Implementation of PPO for AC graph.
 
 """
-import math
 import numpy as np
 import torch
 from torch.optim import Adam
@@ -15,10 +14,9 @@ import time, uuid
 import wandb
 from distutils.util import strtobool
 from collections import deque
-from multiprocessing import cpu_count
 from os import makedirs
-from os.path import dirname, abspath, basename, join
-from rlformath.agents.ppo import to_array, Agent, make_env, \
+from os.path import basename, join
+from rlformath.agents.utils import convert_relators_to_presentation, Agent, make_env, \
       get_pres, get_curr_lr, load_initial_states_from_text_file
 
 def parse_args():
@@ -142,8 +140,8 @@ if __name__ == '__main__':
         
     # initiate envs
     if args.fixed_init_state: 
-        envs = gym.vector.SyncVectorEnv([make_env(to_array(args.relator1, args.relator2, args.max_length), args) 
-                                         for _ in range(args.num_envs)])
+        presentation = convert_relators_to_presentation(args.relator1, args.relator2, args.max_length)
+        envs = gym.vector.SyncVectorEnv([make_env(presentation, args) for _ in range(args.num_envs)])
     else:
         args.max_length = 36 # update maxlength to max(max(18, 4n+2)) for 1 <= n <= 7 
         assert args.num_envs <= len(initial_states), "modify initiation of envs if num_envs > number of initial states"
