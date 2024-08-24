@@ -2,6 +2,7 @@
 This file contains various helper functions for agents. 
 
 """
+
 import math
 import numpy as np
 import torch
@@ -11,6 +12,7 @@ import gymnasium as gym
 from importlib import resources
 from ast import literal_eval
 from rlformath.envs.ac_env import ACEnv
+
 
 def convert_relators_to_presentation(relator1, relator2, max_relator_length):
     """
@@ -25,20 +27,27 @@ def convert_relators_to_presentation(relator1, relator2, max_relator_length):
     Returns:
     np.ndarray: A numpy array of dtype int8, containing the two relators concatenated and zero-padded to max_length.
     """
-    
+
     # Ensure relators do not contain zeros and max_relator_length is sufficient
-    assert 0 not in relator1 and 0 not in relator2, "relator1 and relator2 must not be padded with zeros."
-    assert max_relator_length >= max(len(relator1), len(relator2)), "max_relator_length must be greater than or equal to the lengths of relator1 and rel2."
-    assert isinstance(relator1, list) and isinstance(relator2, list), f"got types {type(relator1)} for relator1 and {type(relator2)} for relator2"
-     
+    assert (
+        0 not in relator1 and 0 not in relator2
+    ), "relator1 and relator2 must not be padded with zeros."
+    assert max_relator_length >= max(
+        len(relator1), len(relator2)
+    ), "max_relator_length must be greater than or equal to the lengths of relator1 and rel2."
+    assert isinstance(relator1, list) and isinstance(
+        relator2, list
+    ), f"got types {type(relator1)} for relator1 and {type(relator2)} for relator2"
+
     padded_relator1 = relator1 + [0] * (max_relator_length - len(relator1))
     padded_relator2 = relator2 + [0] * (max_relator_length - len(relator2))
 
     return np.array(padded_relator1 + padded_relator2, dtype=np.int8)
 
+
 def change_max_relator_length_of_presentation(presentation, new_max_length):
     """
-    Adjusts the maximum length of the relators in a given presentation by reformatting it 
+    Adjusts the maximum length of the relators in a given presentation by reformatting it
     with a new specified maximum length.
 
     Parameters:
@@ -55,10 +64,13 @@ def change_max_relator_length_of_presentation(presentation, new_max_length):
     second_word_length = np.count_nonzero(presentation[old_max_length:])
 
     relator1 = presentation[:first_word_length]
-    relator2 = presentation[old_max_length:old_max_length+second_word_length]
+    relator2 = presentation[old_max_length : old_max_length + second_word_length]
 
-    new_presentation = convert_relators_to_presentation(relator1=relator1, relator2=relator2, max_relator_length=new_max_length)
+    new_presentation = convert_relators_to_presentation(
+        relator1=relator1, relator2=relator2, max_relator_length=new_max_length
+    )
     return new_presentation
+
 
 def initialize_layer(layer, std=np.sqrt(2), bias_const=0.0):
     """
@@ -76,6 +88,7 @@ def initialize_layer(layer, std=np.sqrt(2), bias_const=0.0):
     torch.nn.init.constant_(layer.bias, bias_const)
     return layer
 
+
 def build_network(nodes_counts, std=0.01):
     """
     Constructs a neural network with fully connected layers and Tanh activations based on the specified node counts.
@@ -88,14 +101,17 @@ def build_network(nodes_counts, std=0.01):
     list: A list of layers (including activation functions) representing the neural network.
     """
     layers = [initialize_layer(nn.Linear(nodes_counts[0], nodes_counts[1])), nn.Tanh()]
-    
+
     for i in range(1, len(nodes_counts) - 2):
         layers.append(initialize_layer(nn.Linear(nodes_counts[i], nodes_counts[i + 1])))
         layers.append(nn.Tanh())
-    
-    layers.append(initialize_layer(nn.Linear(nodes_counts[-2], nodes_counts[-1]), std=std))
-    
+
+    layers.append(
+        initialize_layer(nn.Linear(nodes_counts[-2], nodes_counts[-1]), std=std)
+    )
+
     return layers
+
 
 class Agent(nn.Module):
     """
@@ -150,19 +166,20 @@ class Agent(nn.Module):
         logits = self.actor(x)
         value = self.critic(x)
         probs = Categorical(logits=logits)
-        
+
         if action is None:
             action = probs.sample()
 
         return action, probs.log_prob(action), probs.entropy(), value
-    
+
+
 def make_env(presentation, args):
     """
     Creates an environment initialization function (thunk) with the specified configuration.
 
     Parameters:
     presentation (list): The initial presentation configuration for the environment.
-    args (Namespace): A set of arguments containing the environment parameters such as max_relator_length, max_env_steps, 
+    args (Namespace): A set of arguments containing the environment parameters such as max_relator_length, max_env_steps,
                       use_supermoves, norm_rewards, gamma, clip_rewards, min_rew, and max_rew.
 
     Returns:
@@ -172,10 +189,10 @@ def make_env(presentation, args):
     def thunk():
 
         env_config = {
-            'init_presentation': presentation,
-            'max_relator_length': args.max_relator_length,
-            'max_count_steps': args.max_env_steps,
-            'use_supermoves': args.use_supermoves
+            "init_presentation": presentation,
+            "max_relator_length": args.max_relator_length,
+            "max_count_steps": args.max_env_steps,
+            "use_supermoves": args.use_supermoves,
         }
 
         env = ACEnv(env_config)
@@ -183,15 +200,18 @@ def make_env(presentation, args):
         # optionally normalize and / or clip rewards
         if args.norm_rewards:
             env = gym.wrappers.NormalizeReward(env, gamma=args.gamma)
-        
+
         if args.clip_rewards:
             assert args.min_rew < args.max_rew, "min_rew must be less than max_rew"
-            env = gym.wrappers.TransformReward(env, lambda reward: np.clip(reward, args.min_rew, args.max_rew))
-        
-        return env 
+            env = gym.wrappers.TransformReward(
+                env, lambda reward: np.clip(reward, args.min_rew, args.max_rew)
+            )
+
+        return env
 
     return thunk
-    
+
+
 def load_initial_states_from_text_file(states_type):
     """
     Loads initial presentations from a text file based on the specified state type. The presentations
@@ -209,16 +229,17 @@ def load_initial_states_from_text_file(states_type):
     assert states_type in ["solved", "all"], "states_type must be 'solved' or 'all'"
 
     file_name_prefix = "greedy_solved" if states_type == "solved" else "all"
-    file_name = f'{file_name_prefix}_presentations.txt'
-    with resources.open_text('rlformath.search.miller_schupp.data', file_name) as file:
+    file_name = f"{file_name_prefix}_presentations.txt"
+    with resources.open_text("rlformath.search.miller_schupp.data", file_name) as file:
         initial_states = [literal_eval(line.strip()) for line in file]
 
     print(f"Loaded {len(initial_states)} presentations from {file_name}.")
     return initial_states
 
+
 def get_curr_lr(n_update, lr_decay, warmup, max_lr, min_lr, total_updates):
     """
-    Calculates the current learning rate based on the update step, learning rate decay schedule, 
+    Calculates the current learning rate based on the update step, learning rate decay schedule,
     warmup period, and other parameters.
 
     Parameters:
@@ -238,7 +259,7 @@ def get_curr_lr(n_update, lr_decay, warmup, max_lr, min_lr, total_updates):
     # Convert to 0-indexed for internal calculations
     n_update -= 1
     total_updates -= 1
-    
+
     # Calculate the end of the warmup period
     warmup_period_end = total_updates * warmup
 
@@ -251,11 +272,16 @@ def get_curr_lr(n_update, lr_decay, warmup, max_lr, min_lr, total_updates):
             lrnow = slope * n_update + intercept
 
         elif lr_decay == "cosine":
-            cosine_arg = (n_update - warmup_period_end) / (total_updates - warmup_period_end) * math.pi
+            cosine_arg = (
+                (n_update - warmup_period_end)
+                / (total_updates - warmup_period_end)
+                * math.pi
+            )
             lrnow = min_lr + (max_lr - min_lr) * (1 + math.cos(cosine_arg)) / 2
 
         else:
-            raise NotImplementedError("Only 'linear' and 'cosine' lr-schedules are available.")
-    
-    return lrnow
+            raise NotImplementedError(
+                "Only 'linear' and 'cosine' lr-schedules are available."
+            )
 
+    return lrnow

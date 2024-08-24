@@ -2,3 +2,4 @@ scratch.ipynb
 wandb/
 dist/
 *.txt
+*.pt

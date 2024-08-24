@@ -206,6 +206,7 @@ kaleido = "0.2.1"
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.2"
 ruff = "^0.6.2"
+black = "^24.8.0"
 
 [build-system]
 requires = ["poetry-core"]

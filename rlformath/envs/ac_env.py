@@ -1,22 +1,24 @@
 """
 Implements Andrews-Curtis (AC) moves for presentations with two generators.
 """
+
 import numpy as np
 from gymnasium import Env
 from gymnasium.spaces import Discrete, Box
 
-def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):  
+
+def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
     """
-    Simplifies a relator by removing neighboring inverses. For example, if input is x^2 y y^{-1} x, the output will be x^3. 
-    
+    Simplifies a relator by removing neighboring inverses. For example, if input is x^2 y y^{-1} x, the output will be x^3.
+
     Parameters:
     relator (numpy array): An array representing a word of generators.
                            Expected form is to have non-zero elements to the left and any padded zeros to the right.
                            For example, [-1, -1, 2, 2, 1, 0, 0] represents the word x^{-2} y^2 x
     max_relator_length (int): Upper bound on the length of the simplified relator.
                               If, after simplification, the relator length > max_relator_length, an assertion error is given.
-                              This bound is placed so as to make the search space finite. Say, 
-    cyclical (bool): A bool to specify whether to remove inverses on opposite ends of the relator. 
+                              This bound is placed so as to make the search space finite. Say,
+    cyclical (bool): A bool to specify whether to remove inverses on opposite ends of the relator.
                      For example, when true, the function will reduce x y x^{-1} to y.
                      This is equivalent to conjugation by a word.
     padded (bool): A bool to specify whether to pad the output with zeros on the right end.
@@ -28,18 +30,20 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
     simplified_relator is a Numpy array representing the simplified relator
     relator_length is the length of simplified word.
     """
-    
+
     assert isinstance(relator, np.ndarray), "expect relator to be a numpy array"
 
     # number of nonzero entries
     relator_length = np.count_nonzero(relator)
     if len(relator) > relator_length:
-        assert (relator[relator_length:] == 0).all(), "expect all zeros to be at the right end"
-    
+        assert (
+            relator[relator_length:] == 0
+        ).all(), "expect all zeros to be at the right end"
+
     # loop over the array and remove inverses
     pos = 0
     while pos < relator_length - 1:
-        if relator[pos] == - relator[pos + 1]:
+        if relator[pos] == -relator[pos + 1]:
             indices_to_remove = [pos, pos + 1]
             relator = np.delete(relator, indices_to_remove)
             relator_length -= 2
@@ -54,56 +58,65 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
         while relator[pos] == -relator[relator_length - pos - 1]:
             pos += 1
         if pos:
-            indices_to_remove = np.concatenate([np.arange(pos), relator_length - 1 - np.arange(pos)])
-            relator = np.delete(
-                relator, indices_to_remove
+            indices_to_remove = np.concatenate(
+                [np.arange(pos), relator_length - 1 - np.arange(pos)]
             )
+            relator = np.delete(relator, indices_to_remove)
             relator_length -= 2 * pos
 
     # if padded, pad zeros to the right so that the output array has length = max_relator_length
     if padded:
         relator = np.pad(relator, (0, max_relator_length - len(relator)))
 
-    assert max_relator_length >= relator_length, "Increase max length! Length of simplified word \
+    assert (
+        max_relator_length >= relator_length
+    ), "Increase max length! Length of simplified word \
                                                   is bigger than maximum allowed length."
 
-    return  relator, relator_length
+    return relator, relator_length
 
 
 # Simplifies each relator in a list of relator.
-def simplify_presentation(presentation, max_relator_length, lengths_of_words, cyclical=True):
+def simplify_presentation(
+    presentation, max_relator_length, lengths_of_words, cyclical=True
+):
     # TODO: lengths_of_words should be called word_lengths instead
-    """ 
+    """
     Simplifies a presentation by simplifying each of its relators. (See `simplify_relator` for more details.)
 
     Parameters:
     presentation: A Numpy Array
     max_relator_length: maximum length a simplified relator is allowed to take
     lengths_of_words: A list containing length of each word.
-    
+
     Returns:
     (simplified_presentation, lengths_of_simplified_words)
     simplified_presentation is a Numpy Array
     lengths_of_simplified_words is a list of lengths of simplified words.
     """
-    
-    presentation = np.array(presentation) # TODO: Is this necessary?
-    assert is_array_valid_presentation(presentation), f"{presentation} is not a valid presentation. Expect all zeros to be padded to the right." 
-    
+
+    presentation = np.array(presentation)  # TODO: Is this necessary?
+    assert is_array_valid_presentation(
+        presentation
+    ), f"{presentation} is not a valid presentation. Expect all zeros to be padded to the right."
+
     lengths_of_words = lengths_of_words.copy()
 
     for i in range(2):
         simplified_relator, length_i = simplify_relator(
-            relator=presentation[i * max_relator_length : (i + 1) * max_relator_length], 
-            max_relator_length=max_relator_length, 
-            cyclical=cyclical, 
-            padded=True
+            relator=presentation[i * max_relator_length : (i + 1) * max_relator_length],
+            max_relator_length=max_relator_length,
+            cyclical=cyclical,
+            padded=True,
         )
-        
-        presentation[i * max_relator_length : (i + 1) * max_relator_length] = simplified_relator
+
+        presentation[i * max_relator_length : (i + 1) * max_relator_length] = (
+            simplified_relator
+        )
         lengths_of_words[i] = length_i
 
     return presentation, lengths_of_words
+
 
 def is_array_valid_presentation(array):
     """
@@ -111,15 +124,17 @@ def is_array_valid_presentation(array):
     An array is a valid presentation with two words if each half has all zeros padded to the right.
     That is, [1, 2, 0, 0, -2, -1, 0, 0] is a valid presentation, but [1, 0, 2, 0, -2, -1, 0, 0] is not.
     And if each word has nonzero length, i.e. [0, 0, 0, 0] and [1, 2, 0, 0] are invalid.
-    
+
     Parameters:
     presentation: A Numpy Array
 
     Returns: True / False
     """
-    
+
     # for two generators and relators, the length of the presentation should be even.
-    assert isinstance(array, (list, np.ndarray)), f"array must be a list or a numpy array, got {type(array)}"
+    assert isinstance(
+        array, (list, np.ndarray)
+    ), f"array must be a list or a numpy array, got {type(array)}"
     if isinstance(array, list):
         array = np.array(array)
 
@@ -130,44 +145,52 @@ def is_array_valid_presentation(array):
     first_word_length = np.count_nonzero(array[:max_relator_length])
     second_word_length = np.count_nonzero(array[max_relator_length:])
 
-    is_first_word_valid = (array[first_word_length : max_relator_length] == 0).all()
+    is_first_word_valid = (array[first_word_length:max_relator_length] == 0).all()
     is_second_word_valid = (array[max_relator_length + second_word_length :] == 0).all()
 
     # for a presentation to be valid, each word should have length >= 1 and it should have all the zeros padded to the right.
-    is_valid = all([
-        is_length_valid,
-        first_word_length > 0,
-        second_word_length > 0,
-        is_first_word_valid,
-        is_second_word_valid
-    ])
+    is_valid = all(
+        [
+            is_length_valid,
+            first_word_length > 0,
+            second_word_length > 0,
+            is_first_word_valid,
+            is_second_word_valid,
+        ]
+    )
 
     return is_valid
+
 
 def is_presentation_trivial(presentation):
     """
     Checks whether a given presentation is trivial or not. (Assumes two generators and relators)
-    For two generators, there are eight possible trivial presentations: <x, y>, <y, x> or any other 
+    For two generators, there are eight possible trivial presentations: <x, y>, <y, x> or any other
     obtained by replacing x --> x^{-1} and / or y --> y^{-1}.
 
     Parameters:
     presentation: A Numpy Array
-    
+
     """
     # presentation should be valid
     if not is_array_valid_presentation(presentation):
         return False
-    
+
     # each word length should be exactly 1
     max_relator_length = len(presentation) // 2
     for i in range(2):
-        if np.count_nonzero(presentation[i * max_relator_length : (i + 1) * max_relator_length]) != 1:
+        if (
+            np.count_nonzero(
+                presentation[i * max_relator_length : (i + 1) * max_relator_length]
+            )
+            != 1
+        ):
             return False
 
     # if each word length is 1, each generator or its inverse should appear exactly once,
     # i.e. non zero elements, after sorting, should equal to np.array([1, 2]).
     non_zero_elements = abs(presentation[presentation != 0])
-    non_zero_elements.sort() 
+    non_zero_elements.sort()
     is_trivial = np.array_equal(non_zero_elements, np.arange(1, 3))
     return is_trivial
 
@@ -176,7 +199,7 @@ def is_presentation_trivial(presentation):
 def generate_trivial_states(max_relator_length):
     r"""
     Generate Numpy Arrays of trivial states for a given max_relator_length.
-    e.g. if max_relator_length = 3, one trivial state is [1, 0, 0, 2, 0, 0]. 
+    e.g. if max_relator_length = 3, one trivial state is [1, 0, 0, 2, 0, 0].
     There are 8 trivial states in total: (x^{\pm 1}, y^{\pm 1}) and (y^{\pm 1}, x^{\pm 1})
 
     Parameters:
@@ -207,9 +230,9 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
     presentation: A Numpy Array representing a presentation
     max_relator_length: An int. Maximum length the concatenated relator is allowed to have.
                         If length of the concatenated relator (after simplification) is greater than this integer,
-                        the original presentation is returned without any changes. 
+                        the original presentation is returned without any changes.
                         The only simplifications applied are free reductions and not cyclical reductions as the latter
-                        correspond to conjugations on a given word. 
+                        correspond to conjugations on a given word.
     i: 0 or 1, index of the relator to change.
     j: 0 or 1, but not equal to i.
     sign: +1 or -1, whether to invert r_j before concatenation.
@@ -220,9 +243,13 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
     resultant_presentation is the presentation with r_i possibly replaced with r_i r_j^{sign}.
     lengths_of_resultant_presentations is the list of lengths of words in the resultant presentation.
     """
-    assert all([i in [0, 1], \
-                j in [0, 1], \
-                i == 1 - j,]), f"expect i and j to be 0 or 1 and i != j; got i = {i}, j = {j}"
+    assert all(
+        [
+            i in [0, 1],
+            j in [0, 1],
+            i == 1 - j,
+        ]
+    ), f"expect i and j to be 0 or 1 and i != j; got i = {i}, j = {j}"
 
     assert sign in [1, -1], f"expect sign to be +1 or -1, received {sign}"
     # TODO: for clarity, I should replace sign with invert_j which is a bool.
@@ -237,7 +264,9 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
     if sign == 1:
         relator2 = presentation[j * max_relator_length : (j + 1) * max_relator_length]
     elif j:
-        relator2 = -presentation[(j + 1) * max_relator_length - 1 : j * max_relator_length - 1 : -1]
+        relator2 = -presentation[
+            (j + 1) * max_relator_length - 1 : j * max_relator_length - 1 : -1
+        ]
     else:
         relator2 = -presentation[max_relator_length - 1 :: -1]
 
@@ -246,41 +275,48 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
 
     # TODO: should we use simplify_relator here? Something like the following code.
     # concatenated_relator = np.concatenate((relator1_nonzero, relator2_nonzero))
-    # concatenated_relator, new_size = simplify_relator(relator=concatenated_relator, 
-    #                                         max_relator_length=max_relator_length, 
-    #                                         cyclical=False, 
+    # concatenated_relator, new_size = simplify_relator(relator=concatenated_relator,
+    #                                         max_relator_length=max_relator_length,
+    #                                         cyclical=False,
     #                                         padded=True)
-
 
     len1 = len(relator1_nonzero)
     len2 = len(relator2_nonzero)
 
     acc = 0
-    while acc < min(len1, len2) and relator1_nonzero[-1 - acc] == -relator2_nonzero[acc]:
+    while (
+        acc < min(len1, len2) and relator1_nonzero[-1 - acc] == -relator2_nonzero[acc]
+    ):
         acc += 1
 
     new_size = len1 + len2 - 2 * acc
 
     if new_size <= max_relator_length:
         lengths[i] = new_size
-        presentation[i * max_relator_length : i * max_relator_length + len1 - acc] = relator1_nonzero[: len1 - acc]
-        presentation[i * max_relator_length + len1 - acc : i * max_relator_length + new_size] = relator2_nonzero[acc:]
-        presentation[i * max_relator_length + new_size : (i + 1) * max_relator_length] = 0
+        presentation[i * max_relator_length : i * max_relator_length + len1 - acc] = (
+            relator1_nonzero[: len1 - acc]
+        )
+        presentation[
+            i * max_relator_length + len1 - acc : i * max_relator_length + new_size
+        ] = relator2_nonzero[acc:]
+        presentation[
+            i * max_relator_length + new_size : (i + 1) * max_relator_length
+        ] = 0
 
     return presentation, lengths
 
 
 def conjugate(presentation, max_relator_length, i, j, sign, lengths):
     """
-    Given a presentation <r_0, r_1>, returns a new presentation where r_i is replaced by x_j^{sign} r_i x_j^{-sign}. 
+    Given a presentation <r_0, r_1>, returns a new presentation where r_i is replaced by x_j^{sign} r_i x_j^{-sign}.
 
     Parameters:
     presentation: A Numpy Array representing a presentation
     max_relator_length: An int. Maximum length the concatenated relator is allowed to have.
                         If length of the concatenated relator (after simplification) is greater than this integer,
-                        the original presentation is returned without any changes. 
+                        the original presentation is returned without any changes.
                         The only simplifications applied are free reductions and not cyclical reductions as the latter
-                        correspond to conjugations on a given word. 
+                        correspond to conjugations on a given word.
     i: 0 or 1, index of the relator to change.
     j: 1 or 2, index of the generator to conjugate with.
     sign: +1 or -1, whether to invert x_j before concatenation.
@@ -290,11 +326,12 @@ def conjugate(presentation, max_relator_length, i, j, sign, lengths):
     (resultant_presentation, lengths_of_resultant_presentations)
     resultant_presentation is the presentation with r_i possibly replaced with x_j^{sign} r_i x_j^{-sign}.
     lengths_of_resultant_presentations is the list of lengths of words in the resultant presentation.
-    
+
     """
     # TODO: perhaps i and j should be more uniformly both in [0, 1].
-    assert all([i in [0, 1], \
-                j in [1, 2]]), f"expect i to be 0 and 1 and j to be 1 or 2; got i = {i}, j = {j}"
+    assert all(
+        [i in [0, 1], j in [1, 2]]
+    ), f"expect i to be 0 and 1 and j to be 1 or 2; got i = {i}, j = {j}"
 
     assert sign in [1, -1], f"expect sign to be +1 or -1, received {sign}"
 
@@ -307,7 +344,7 @@ def conjugate(presentation, max_relator_length, i, j, sign, lengths):
     generator = sign * j
 
     # TODO: again here, it will be good to use simplify_relator
-    
+
     # check whether we will need to cancel any generators at the beginning and at the end
     start_cancel = 1 if relator_nonzero[0] == -generator else 0
     end_cancel = 1 if relator_nonzero[-1] == generator else 0
@@ -334,12 +371,20 @@ def conjugate(presentation, max_relator_length, i, j, sign, lengths):
             presentation[i * max_relator_length] = generator
 
         if not end_cancel:
-            presentation[i * max_relator_length + relator_size + 1 - 2 * start_cancel] = -generator
+            presentation[
+                i * max_relator_length + relator_size + 1 - 2 * start_cancel
+            ] = -generator
 
         if start_cancel and end_cancel:
-            presentation[i * max_relator_length + new_size : i * max_relator_length + new_size + 2] = 0
+            presentation[
+                i * max_relator_length
+                + new_size : i * max_relator_length
+                + new_size
+                + 2
+            ] = 0
 
     return presentation, lengths
+
 
 def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
     """
@@ -347,9 +392,9 @@ def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
     The move to apply and the relator it is applied to are decided by move_id.
 
     Parameters:
-    move_id: An int in range [1, 12] (both inclusive), deciding which AC move to apply. 
+    move_id: An int in range [1, 12] (both inclusive), deciding which AC move to apply.
             Odd values affect r_1; even values affect r_0.
-            The complete mappling between move_id and moves is as below:            
+            The complete mappling between move_id and moves is as below:
             1. r_1 --> r_1 r_0
             2. r_0 --> r_0 r_1^{-1}
             3. r_1 --> r_1 r_0^{-1}
@@ -370,50 +415,54 @@ def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
     cyclical: A bool; whether to cyclically reduce words in the resultant presentation or not.
     """
 
-    assert move_id in range(1, 13), f"Expect n to be in range 1-12 (both inclusive); got {move_id}"
+    assert move_id in range(
+        1, 13
+    ), f"Expect n to be in range 1-12 (both inclusive); got {move_id}"
 
     if move_id in range(1, 5):
-        i = move_id % 2 
+        i = move_id % 2
         j = 1 - i
         sign_parity = ((move_id - i) // 2) % 2
         sign = (-1) ** sign_parity
         move = concatenate_relators
     elif move_id in range(5, 13):
-        i = move_id % 2  
-        jp = ((move_id - i) // 2) % 2 # = 0 or 1
+        i = move_id % 2
+        jp = ((move_id - i) // 2) % 2  # = 0 or 1
         sign_parity = ((move_id - i - 2 * jp) // 4) % 2
-        j = jp + 1 # = 1 or 2
+        j = jp + 1  # = 1 or 2
         sign = (-1) ** sign_parity
         move = conjugate
-        
-    presentation, lengths = move(presentation=presentation,
-                                            max_relator_length=max_relator_length,
-                                            i=i,
-                                            j=j,
-                                            sign=sign,
-                                            lengths=lengths,
-    ) 
-    
+
+    presentation, lengths = move(
+        presentation=presentation,
+        max_relator_length=max_relator_length,
+        i=i,
+        j=j,
+        sign=sign,
+        lengths=lengths,
+    )
+
     # TODO: simplify_presentation seems to do something non-trivial even when
     # cyclical=False. I ran into trouble by putting an `if cyclical==False` cond
     # before the next lines of code.
     # This is confusing because I thought cojugate and concatenate_relators
-    # already do the cyclical=False simplification. 
+    # already do the cyclical=False simplification.
 
     # TODO: cyclical should probably be called cylically_reduce.
     presentation, lengths = simplify_presentation(
-                                presentation=presentation,
-                                max_relator_length=max_relator_length,
-                                lengths_of_words=lengths,
-                                cyclical=cyclical
-                            )  
+        presentation=presentation,
+        max_relator_length=max_relator_length,
+        lengths_of_words=lengths,
+        cyclical=cyclical,
+    )
 
     return presentation, lengths
+
 
 class ACEnv(Env):
     # TODO: config should perhaps be replaced by a config class
     # TODO: separare this class into two classes --- one with supermoves and one without.
-    # TODO: I think I forgot to mention in the paper that if an episode terminates successfully, 
+    # TODO: I think I forgot to mention in the paper that if an episode terminates successfully,
     # we give a large maximum reward.
     def __init__(self, config):
 
@@ -424,7 +473,11 @@ class ACEnv(Env):
         self.max_count_steps = config["max_count_steps"]
         self.count_steps = 0
         self.lengths = [
-            np.count_nonzero(self.state[i * self.max_relator_length : (i + 1) * self.max_relator_length])
+            np.count_nonzero(
+                self.state[
+                    i * self.max_relator_length : (i + 1) * self.max_relator_length
+                ]
+            )
             for i in range(self.n_gen)
         ]
         self.max_reward = self.max_count_steps * self.max_relator_length * self.n_gen
@@ -450,7 +503,9 @@ class ACEnv(Env):
                 13: (2, 9, 4, 1, 1),  # length = 5, appears 121 times
                 14: (3, 5, 11, 3, 9, 11, 5, 1),  # length = 8, appears 26 times
                 15: (4, 12, 2, 4, 4, 10, 3, 2, 9, 4),  # length = 10, apppears 19 times
-                16: (2, 12,
+                16: (
+                    2,
+                    12,
                     2,
                     10,
                     10,
@@ -481,8 +536,12 @@ class ACEnv(Env):
             self.supermoves = None
             self.action_space = Discrete(12)
 
-        low = np.ones(self.max_relator_length * self.n_gen, dtype=np.int8) * (-self.n_gen)
-        high = np.ones(self.max_relator_length * self.n_gen, dtype=np.int8) * (self.n_gen)
+        low = np.ones(self.max_relator_length * self.n_gen, dtype=np.int8) * (
+            -self.n_gen
+        )
+        high = np.ones(self.max_relator_length * self.n_gen, dtype=np.int8) * (
+            self.n_gen
+        )
         self.observation_space = Box(low, high, dtype=np.int8)
 
         if len(self.state) != 2 * self.max_relator_length:
@@ -524,7 +583,11 @@ class ACEnv(Env):
             else np.copy(self.initial_state)
         )
         self.lengths = [
-            np.count_nonzero(self.state[i * self.max_relator_length : (i + 1) * self.max_relator_length])
+            np.count_nonzero(
+                self.state[
+                    i * self.max_relator_length : (i + 1) * self.max_relator_length
+                ]
+            )
             for i in range(self.n_gen)
         ]
         self.count_steps = 0
@@ -538,25 +601,26 @@ class ACEnv(Env):
 
     print("AC ENV LOADED")
 
-# all variables here: rel, nrel, full, ngen, lengths, rels, i, j, sign, 
+
+# all variables here: rel, nrel, full, ngen, lengths, rels, i, j, sign,
 # nrel is length of relator: probably should call it max_relator_len
 # rel: relator
 # rels: presentation
 # lengths: relator_lengths # TODO: is this actually needed?
-# i, j: 
+# i, j:
 # TODO: specify in many places that what's called AC here are really AC-prime moves.
 # TODO: change lengths to word_lengths everywhere.
 # TODO: lengths should probably not be input or outputted into all of the functions anyway.
 # There should be a separate function that computes lengths of words given a presentation.
 # functions: len_words, simplify, full_simplify, is_trivial, trivial_states, concat, conjugate
-# TODO: len_words should just be replaced with np.count_nonzero() everywhere in the codebase. 
+# TODO: len_words should just be replaced with np.count_nonzero() everywhere in the codebase.
 # simplify should be called simplify_relator; I don't know if we ever need padded=False so may well remove that
 # also maybe full should be called 'cyclic' or something like that.
 
 # TODO: there should be tests for simplify, full_simplify, is_trivial, trivial_states, concat and conjugate.
 # TODO: fix indentation. Why is it half as usual here?
 # computes number of nonzero elements of a Numpy array
-# TODO: max_relator_length should be needed only in conjugate and concat, I think. 
-# TODO: lengths_of_words should not be given as a parameter anywhere. We should just compute length of word when we need to. 
+# TODO: max_relator_length should be needed only in conjugate and concat, I think.
+# TODO: lengths_of_words should not be given as a parameter anywhere. We should just compute length of word when we need to.
 # Perhaps there can be a separate function for that.
-#     # TODO: maybe simplify_relator should be renamed reduce_word. 
+#     # TODO: maybe simplify_relator should be renamed reduce_word.

@@ -6,9 +6,17 @@ import torch
 import torch.nn as nn
 import gymnasium as gym
 from argparse import Namespace
-from rlformath.agents.utils import initialize_layer, build_network, Agent, make_env, get_curr_lr, convert_relators_to_presentation
+from rlformath.agents.utils import (
+    initialize_layer,
+    build_network,
+    Agent,
+    make_env,
+    get_curr_lr,
+    convert_relators_to_presentation,
+)
 from rlformath.agents.ppo import parse_args
 from rlformath.envs.ac_env import ACEnv
+
 
 # Sample input data for testing
 @pytest.fixture
@@ -60,9 +68,10 @@ def sample_args():
         minibatch_size=10,
     )
 
+
 def test_parse_args():
     test_args = ["script_name", "--exp-name", "test_exp", "--seed", "42"]
-    with patch.object(sys, 'argv', test_args):
+    with patch.object(sys, "argv", test_args):
         args = parse_args()
         assert args.exp_name == "test_exp"
         assert args.seed == 42
@@ -70,14 +79,18 @@ def test_parse_args():
         assert args.cuda is True
         assert args.wandb_log is False
 
+
 # Test convert_relators_to_presentation function
 def test_convert_relators_to_presentation():
     rel1 = [1, 1, -2, -2, -2]
     rel2 = [1, 2, 1, -2, -1, -2]
     max_relator_length = 7
     arr = convert_relators_to_presentation(rel1, rel2, max_relator_length)
-    expected_array = np.array([1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0], dtype=np.int8)
+    expected_array = np.array(
+        [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0], dtype=np.int8
+    )
     assert np.array_equal(arr, expected_array)
+
 
 # Test layer initialization function
 def test_initialize_layer():
@@ -85,6 +98,7 @@ def test_initialize_layer():
     initialized_layer = initialize_layer(layer)
     assert initialized_layer.weight.shape == torch.Size([2, 4])
     assert initialized_layer.bias.shape == torch.Size([2])
+
 
 # Test get_net function
 def test_get_net():
@@ -94,18 +108,45 @@ def test_get_net():
     assert isinstance(layers[0], nn.Linear)
     assert isinstance(layers[1], nn.Tanh)
 
+
 # Test Agent class initialization
 def test_agent_initialization(sample_args):
-    envs = gym.vector.SyncVectorEnv([make_env(convert_relators_to_presentation(sample_args.relator1, sample_args.relator2, sample_args.max_relator_length), sample_args)])
+    envs = gym.vector.SyncVectorEnv(
+        [
+            make_env(
+                convert_relators_to_presentation(
+                    sample_args.relator1,
+                    sample_args.relator2,
+                    sample_args.max_relator_length,
+                ),
+                sample_args,
+            )
+        ]
+    )
     agent = Agent(envs, sample_args.nodes_counts)
     assert isinstance(agent, Agent)
 
+
 # Test Agent methods get_value and get_action_and_value
 def test_agent_methods(sample_args):
-    envs = gym.vector.SyncVectorEnv([make_env(convert_relators_to_presentation(sample_args.relator1, sample_args.relator2, sample_args.max_relator_length), sample_args)])
+    envs = gym.vector.SyncVectorEnv(
+        [
+            make_env(
+                convert_relators_to_presentation(
+                    sample_args.relator1,
+                    sample_args.relator2,
+                    sample_args.max_relator_length,
+                ),
+                sample_args,
+            )
+        ]
+    )
     agent = Agent(envs, sample_args.nodes_counts)
 
-    obs = torch.randn((sample_args.num_steps, sample_args.num_envs) + envs.single_observation_space.shape)
+    obs = torch.randn(
+        (sample_args.num_steps, sample_args.num_envs)
+        + envs.single_observation_space.shape
+    )
 
     value = agent.get_value(obs[0])
     assert value.shape == torch.Size([sample_args.num_envs, 1])
@@ -116,14 +157,18 @@ def test_agent_methods(sample_args):
     assert entropy.shape == torch.Size([sample_args.num_envs])
     assert value.shape == torch.Size([sample_args.num_envs, 1])
 
+
 # Test get_curr_lr function
 # TODO: including more cases here can be useful
-@pytest.mark.parametrize("lr_decay, warmup, n_update, expected_lr", [
-    ("linear", 0.1, 1, 0.0),
-    ("linear", 0.0, 1, 2.5e-04),
-    ("cosine", 0.0, 159, 0.0),
-    ("cosine", 0.1, 100, 9.36e-05),
-])
+@pytest.mark.parametrize(
+    "lr_decay, warmup, n_update, expected_lr",
+    [
+        ("linear", 0.1, 1, 0.0),
+        ("linear", 0.0, 1, 2.5e-04),
+        ("cosine", 0.0, 159, 0.0),
+        ("cosine", 0.1, 100, 9.36e-05),
+    ],
+)
 def test_get_curr_lr(lr_decay, warmup, n_update, expected_lr, sample_args):
     max_lr = sample_args.learning_rate
     min_lr = max_lr * sample_args.min_lr_frac
@@ -132,9 +177,12 @@ def test_get_curr_lr(lr_decay, warmup, n_update, expected_lr, sample_args):
     lrnow = get_curr_lr(n_update, lr_decay, warmup, max_lr, min_lr, total_updates)
     assert np.isclose(lrnow, expected_lr, atol=1e-4)
 
+
 # Test make_env function
 def test_make_env(sample_args):
-    presentation = convert_relators_to_presentation(sample_args.relator1, sample_args.relator2, sample_args.max_relator_length)
+    presentation = convert_relators_to_presentation(
+        sample_args.relator1, sample_args.relator2, sample_args.max_relator_length
+    )
     env_thunk = make_env(presentation, sample_args)
     env = env_thunk()
     if sample_args.clip_rewards:
@@ -142,4 +190,6 @@ def test_make_env(sample_args):
     elif sample_args.norm_rewards:
         assert isinstance(env, gym.wrappers.NormalizeReward)
     else:
-        assert isinstance(env, ACEnv), f"expect env to be of type ACEnv, got {type(env)}"
+        assert isinstance(
+            env, ACEnv
+        ), f"expect env to be of type ACEnv, got {type(env)}"
