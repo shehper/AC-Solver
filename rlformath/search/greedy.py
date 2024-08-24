@@ -18,20 +18,18 @@ def greedy_search(
     cyclically_reduce_after_moves=False,
 ):
     """
-    Performs greedy search on AC graph starting from the node corresponding to input presentation.
-    Search is terminated when a node corresponding to a trivial state is found or when we have explored `max_nodes_to_explore` nodes.
+    Performs a greedy search on an AC graph starting from the given presentation.
 
     Parameters:
-    presentation: A NumPy array representing a presentation.
-    max_nodes_to_explore (int): The maximum number of nodes to explore during search.
-    verbose (bool): It determines whether to print information each time a presentation with smaller total length is found.
-    cyclically_reduce_after_moves (bool): It determines whether
+        presentation (np.ndarray): Initial presentation as a NumPy array.
+        max_nodes_to_explore (int): Max nodes to explore before termination.
+        verbose (bool, optional): Print updates when shorter presentations are found (default: False).
+        cyclically_reduce_after_moves (bool, optional): Apply cyclic reduction after each move (default: False).
 
     Returns:
-    (is_search_successful, path)
-    is_search_successful is a bool indicating whether a path to a trivial state is found.
-    path is a list of tuples of (action, presentation_length) where action is the AC Move applied to obtain the current node
-    and presentation_length is the total length of the presentation.
+        tuple: (is_search_successful, path)
+            - is_search_successful (bool): Whether a trivial state was found.
+            - path (list of tuple): Sequence of (action, presentation_length).
     """
 
     presentation = np.array(
@@ -123,8 +121,8 @@ def greedy_search(
 
 
 if __name__ == "__main__":
-    # AK(2)
-    presentation = np.array([1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0])
+    
+    presentation = np.array([1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]) # AK(2)
 
     ans, path = greedy_search(presentation=presentation, max_nodes_to_explore=int(1e6))
 
