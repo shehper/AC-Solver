@@ -102,7 +102,7 @@ if __name__=='__main__':
               Presentation {presentation} solved!
               Path length: {len(path)}
               """)
-        print(f"Checking whether this path actually leads to a trivial state..")
+        print("Checking whether this path actually leads to a trivial state..")
         word_lengths = [5, 6]
 
         for action, _ in path[1:]:

@@ -1,16 +1,18 @@
 """
 Implementation of PPO for AC graph.
 
+# TODO: include some examples here.
+
 """
 import numpy as np
 import torch
 from torch.optim import Adam
 from torch import nn
-from torch.optim import Adam
 import gymnasium as gym
 import argparse
 import random
-import time, uuid
+import time
+import uuid
 import wandb
 from distutils.util import strtobool
 from collections import deque
@@ -31,7 +33,7 @@ def parse_args():
         help="if toggled, cuda will be enabled by default")
     parser.add_argument("--wandb-log", type=lambda x: bool(strtobool(x)), default=False, nargs="?", const=True,
         help="if toggled, this experiment will be tracked with Weights and Biases")
-    parser.add_argument("--wandb-project-name", type=str, default="PPO-AC",
+    parser.add_argument("--wandb-project-name", type=str, default="AC-Solver-PPO",
         help="the wandb's project name")
     parser.add_argument("--wandb-entity", type=str, default=None,
         help="the entity (team) of wandb's project")

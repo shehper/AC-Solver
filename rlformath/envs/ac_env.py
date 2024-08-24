@@ -1,35 +1,11 @@
 """
 Implements Andrews-Curtis (AC) moves for presentations with two generators.
 """
-
 import numpy as np
 from gymnasium import Env
 from gymnasium.spaces import Discrete, Box
 
-# all variables here: rel, nrel, full, ngen, lengths, rels, i, j, sign, 
-# nrel is length of relator: probably should call it max_relator_len
-# rel: relator
-# rels: presentation
-# lengths: relator_lengths # TODO: is this actually needed?
-# i, j: 
-# TODO: specify in many places that what's called AC here are really AC-prime moves.
-# TODO: change lengths to word_lengths everywhere.
-# TODO: lengths should probably not be input or outputted into all of the functions anyway.
-# There should be a separate function that computes lengths of words given a presentation.
-# functions: len_words, simplify, full_simplify, is_trivial, trivial_states, concat, conjugate
-# TODO: len_words should just be replaced with np.count_nonzero() everywhere in the codebase. 
-# simplify should be called simplify_relator; I don't know if we ever need padded=False so may well remove that
-# also maybe full should be called 'cyclic' or something like that.
-
-# TODO: there should be tests for simplify, full_simplify, is_trivial, trivial_states, concat and conjugate.
-# TODO: fix indentation. Why is it half as usual here?
-# computes number of nonzero elements of a Numpy array
-# TODO: max_relator_length should be needed only in conjugate and concat, I think. 
-# TODO: lengths_of_words should not be given as a parameter anywhere. We should just compute length of word when we need to. 
-# Perhaps there can be a separate function for that. 
-
-def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
-    # TODO: maybe simplify_relator should be renamed reduce_word.  
+def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):  
     """
     Simplifies a relator by removing neighboring inverses. For example, if input is x^2 y y^{-1} x, the output will be x^3. 
     
@@ -561,3 +537,26 @@ class ACEnv(Env):
         pass
 
     print("AC ENV LOADED")
+
+# all variables here: rel, nrel, full, ngen, lengths, rels, i, j, sign, 
+# nrel is length of relator: probably should call it max_relator_len
+# rel: relator
+# rels: presentation
+# lengths: relator_lengths # TODO: is this actually needed?
+# i, j: 
+# TODO: specify in many places that what's called AC here are really AC-prime moves.
+# TODO: change lengths to word_lengths everywhere.
+# TODO: lengths should probably not be input or outputted into all of the functions anyway.
+# There should be a separate function that computes lengths of words given a presentation.
+# functions: len_words, simplify, full_simplify, is_trivial, trivial_states, concat, conjugate
+# TODO: len_words should just be replaced with np.count_nonzero() everywhere in the codebase. 
+# simplify should be called simplify_relator; I don't know if we ever need padded=False so may well remove that
+# also maybe full should be called 'cyclic' or something like that.
+
+# TODO: there should be tests for simplify, full_simplify, is_trivial, trivial_states, concat and conjugate.
+# TODO: fix indentation. Why is it half as usual here?
+# computes number of nonzero elements of a Numpy array
+# TODO: max_relator_length should be needed only in conjugate and concat, I think. 
+# TODO: lengths_of_words should not be given as a parameter anywhere. We should just compute length of word when we need to. 
+# Perhaps there can be a separate function for that.
+#     # TODO: maybe simplify_relator should be renamed reduce_word. 

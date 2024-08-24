@@ -201,8 +201,8 @@ if __name__ == "__main__":
     
     args = parse_args()
     assert args.search_fn in ["greedy", "bfs"], f"expect search-algorithm to be greedy or bfs; got {args.search_fn}"
-    assert args.min_n <= args.max_n, f"min_n cannot be greater than max_n"
-    assert args.min_w_len <= args.max_w_len, f"min_w_len cannot be greater than max_w_len"
+    assert args.min_n <= args.max_n, "min_n cannot be greater than max_n"
+    assert args.min_w_len <= args.max_w_len, "min_w_len cannot be greater than max_w_len"
 
     if args.search_fn == "greedy":
         from rlformath.search.greedy import greedy_search
