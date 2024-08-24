@@ -1,11 +1,11 @@
 import pytest
 import numpy as np
-from rlformath.search.miller_schupp.miller_schupp import (
+from ac_solver.search.miller_schupp.miller_schupp import (
     trivialize_miller_schupp_through_search,
     generate_miller_schupp_presentations,
 )
-from rlformath.search.greedy import greedy_search
-from rlformath.search.breadth_first import bfs
+from ac_solver.search.greedy import greedy_search
+from ac_solver.search.breadth_first import bfs
 
 # TODO: write more tests involving more ranges of n, w_len and search_fn.
 

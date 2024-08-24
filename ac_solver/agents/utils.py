@@ -11,7 +11,7 @@ from torch import nn
 import gymnasium as gym
 from importlib import resources
 from ast import literal_eval
-from rlformath.envs.ac_env import ACEnv
+from ac_solver.envs.ac_env import ACEnv
 
 
 def convert_relators_to_presentation(relator1, relator2, max_relator_length):
@@ -230,7 +230,7 @@ def load_initial_states_from_text_file(states_type):
 
     file_name_prefix = "greedy_solved" if states_type == "solved" else "all"
     file_name = f"{file_name_prefix}_presentations.txt"
-    with resources.open_text("rlformath.search.miller_schupp.data", file_name) as file:
+    with resources.open_text("ac_solver.search.miller_schupp.data", file_name) as file:
         initial_states = [literal_eval(line.strip()) for line in file]
 
     print(f"Loaded {len(initial_states)} presentations from {file_name}.")

@@ -1,4 +1,4 @@
-import rlformath.search.miller_schupp.data as data
+import ac_solver.search.miller_schupp.data as data
 from importlib import resources
 
 

@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import gymnasium as gym
 from argparse import Namespace
-from rlformath.agents.utils import (
+from ac_solver.agents.utils import (
     initialize_layer,
     build_network,
     Agent,
@@ -14,8 +14,8 @@ from rlformath.agents.utils import (
     get_curr_lr,
     convert_relators_to_presentation,
 )
-from rlformath.agents.ppo import parse_args
-from rlformath.envs.ac_env import ACEnv
+from ac_solver.agents.ppo import parse_args
+from ac_solver.envs.ac_env import ACEnv
 
 
 # Sample input data for testing

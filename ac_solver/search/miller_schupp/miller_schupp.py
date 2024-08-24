@@ -5,7 +5,7 @@ MS(n, w) = <x, y | x^{-1} y^n x = y^{n+1}, x = w>
 
 Example:
 To peform greedy search on presentations of Miller-Schupp series with n in [3, 5] and length(w) in [2, 3], do
-python -u rlformath/search/miller_schupp/miller_schupp.py --min-n=3 --max-n=5 --min-w-len=2 --max-w-len=3 --search-fn=greedy
+python -u ac_solver/search/miller_schupp/miller_schupp.py --min-n=3 --max-n=5 --min-w-len=2 --max-w-len=3 --search-fn=greedy
 
 See txt files in "data" subfolder to see the results.
 """
@@ -14,7 +14,7 @@ import os
 import argparse
 import numpy as np
 from itertools import product
-from rlformath.envs.ac_env import simplify_relator
+from ac_solver.envs.ac_env import simplify_relator
 
 
 def generate_miller_schupp_presentations(n, max_w_len):
@@ -231,11 +231,11 @@ if __name__ == "__main__":
     ), "min_w_len cannot be greater than max_w_len"
 
     if args.search_fn == "greedy":
-        from rlformath.search.greedy import greedy_search
+        from ac_solver.search.greedy import greedy_search
 
         search_fn = greedy_search
     elif args.search_fn == "bfs":
-        from rlformath.search.breadth_first import bfs
+        from ac_solver.search.breadth_first import bfs
 
         search_fn = bfs
     else:
