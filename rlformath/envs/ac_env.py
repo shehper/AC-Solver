@@ -25,7 +25,6 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
                    If True, the output array has length = max_relator_length, with number of padded zeros
                    equal to the difference of max_relator_length and word length of the simplified relator.
 
-
     Returns: (simplified_relator, relator_length)
     simplified_relator is a Numpy array representing the simplified relator
     relator_length is the length of simplified word.
@@ -250,15 +249,13 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
     ), f"expect i and j to be 0 or 1 and i != j; got i = {i}, j = {j}"
 
     assert sign in [1, -1], f"expect sign to be +1 or -1, received {sign}"
-    # TODO: for clarity, I should replace sign with invert_j which is a bool.
-    # TODO: As j != i, perhaps it's not important to include j.
-    # TODO: either we should just not pass lengths or we should check that they are correct for the given presentation
 
     # get r_i
     presentation = presentation.copy()
     relator1 = presentation[i * max_relator_length : (i + 1) * max_relator_length]
 
-    # TODO; what's going on here?
+    # get r_j or r_j^{-1} depending on sign
+    # TODO: really need to understand this
     if sign == 1:
         relator2 = presentation[j * max_relator_length : (j + 1) * max_relator_length]
     elif j:
@@ -270,13 +267,6 @@ def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
 
     relator1_nonzero = relator1[relator1 != 0]
     relator2_nonzero = relator2[relator2 != 0]
-
-    # TODO: should we use simplify_relator here? Something like the following code.
-    # concatenated_relator = np.concatenate((relator1_nonzero, relator2_nonzero))
-    # concatenated_relator, new_size = simplify_relator(relator=concatenated_relator,
-    #                                         max_relator_length=max_relator_length,
-    #                                         cyclical=False,
-    #                                         padded=True)
 
     len1 = len(relator1_nonzero)
     len2 = len(relator2_nonzero)
