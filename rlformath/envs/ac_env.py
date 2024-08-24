@@ -76,11 +76,9 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
     return relator, relator_length
 
 
-# Simplifies each relator in a list of relator.
 def simplify_presentation(
     presentation, max_relator_length, lengths_of_words, cyclical=True
 ):
-    # TODO: lengths_of_words should be called word_lengths instead
     """
     Simplifies a presentation by simplifying each of its relators. (See `simplify_relator` for more details.)
 
@@ -623,4 +621,3 @@ class ACEnv(Env):
 # TODO: max_relator_length should be needed only in conjugate and concat, I think.
 # TODO: lengths_of_words should not be given as a parameter anywhere. We should just compute length of word when we need to.
 # Perhaps there can be a separate function for that.
-#     # TODO: maybe simplify_relator should be renamed reduce_word.

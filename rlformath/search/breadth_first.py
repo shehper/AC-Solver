@@ -101,8 +101,8 @@ def bfs(
 
 
 if __name__ == "__main__":
-    
-    presentation = np.array([1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]) # AK(2)
+
+    presentation = np.array([1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0])  # AK(2)
 
     ans, path = bfs(presentation=presentation, max_nodes_to_explore=int(1e6))
 
