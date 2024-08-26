@@ -17,7 +17,7 @@ from ac_env_solver.envs.ac_env import (
 
 def bfs(
     presentation,
-    max_nodes_to_explore,
+    max_nodes_to_explore=10000,
     verbose=False,
     cyclically_reduce_after_moves=False,
 ):
@@ -26,7 +26,7 @@ def bfs(
 
     Parameters:
         presentation (np.ndarray): Initial presentation as a NumPy array.
-        max_nodes_to_explore (int): Max nodes to explore before termination.
+        max_nodes_to_explore (int, optional): Max nodes to explore before termination (default: 10000).
         verbose (bool, optional): Print updates when shorter presentations are found (default: False).
         cyclically_reduce_after_moves (bool, optional): Apply cyclic reduction after each move (default: False).
 
