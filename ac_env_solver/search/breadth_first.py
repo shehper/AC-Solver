@@ -8,7 +8,7 @@ python breadth_first.py
 
 import numpy as np
 from collections import deque
-from ac_solver.envs.ac_env import (
+from ac_env_solver.envs.ac_env import (
     ACMove,
     is_array_valid_presentation,
     is_presentation_trivial,

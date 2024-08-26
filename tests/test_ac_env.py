@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from ac_solver.envs.ac_env import (
+from ac_env_solver.envs.ac_env import (
     simplify_relator,
     is_array_valid_presentation,
     is_presentation_trivial,

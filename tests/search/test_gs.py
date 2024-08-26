@@ -1,5 +1,5 @@
 import numpy as np
-from ac_solver.search.greedy import (
+from ac_env_solver.search.greedy import (
     greedy_search,
 )  # Ensure this imports the bfs function correctly
 

@@ -9,7 +9,7 @@ import wandb
 from collections import deque
 from os import makedirs
 from os.path import join
-from ac_solver.agents.utils import (
+from ac_env_solver.agents.utils import (
     get_curr_lr,
 )
 

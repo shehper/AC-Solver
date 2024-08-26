@@ -1,7 +1,7 @@
 import numpy as np
 import gymnasium as gym
-from ac_solver.envs.ac_env import ACEnv
-from ac_solver.agents.utils import (
+from ac_env_solver.envs.ac_env import ACEnv
+from ac_env_solver.agents.utils import (
     load_initial_states_from_text_file,
     convert_relators_to_presentation,
     change_max_relator_length_of_presentation,

@@ -10,10 +10,10 @@ import torch
 from torch.optim import Adam
 
 import random
-from ac_solver.agents.ppo_agent import Agent
-from ac_solver.agents.args import parse_args
-from ac_solver.agents.environment import get_env
-from ac_solver.agents.training import train_ppo
+from ac_env_solver.agents.ppo_agent import Agent
+from ac_env_solver.agents.args import parse_args
+from ac_env_solver.agents.environment import get_env
+from ac_env_solver.agents.training import train_ppo
 
 
 def main():
