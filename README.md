@@ -13,11 +13,11 @@
 
 
 
-### Overview
+## Overview
 
 This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning Agents: A Case Study."* It includes an implementation of the AC Environment in Gymnasium, two classical search algorithms (BFS and Greedy Search), and a PPO agent that works within this environment. Additionally, the repository contains Jupyter notebooks for reproducing the analyses and figures presented in the paper.
 
-### Installation
+## Installation
 
 To work with the AC Environment or build upon it, you can simply install the package using pip:
 
@@ -46,11 +46,11 @@ If you wish to reproduce the plots and analyses in the paper, you will need to c
    pip install .
    ```
 
-### Usage
+## Usage
 
 After installation, you can start using the environment and agents as follows:
 
-#### Initializing the AC Environment
+### Initializing the AC Environment
 
 ```python
 from ac_env_solver.envs.ac_env import ACEnv
@@ -58,7 +58,7 @@ from ac_env_solver.envs.ac_env import ACEnv
 acenv = ACEnv()
 ```
 
-#### Solving the Environment with PPO
+### Solving the Environment with PPO
 
 ```python
 from ac_env_solver.agents.ppo import train_ppo
@@ -66,7 +66,7 @@ from ac_env_solver.agents.ppo import train_ppo
 train_ppo()
 ```
 
-#### Performing Classical Search
+### Performing Classical Search
 
 Specify a presentation and perform a greedy search:
 
@@ -78,7 +78,7 @@ from ac_env_solver.search.greedy import greedy_search
 greedy_search(presentation)
 ```
 
-### Notebooks
+## Notebooks
 
 The `notebooks/` directory contains Jupyter notebooks that reproduce the figures and results discussed in the paper:
 
@@ -88,7 +88,7 @@ The `notebooks/` directory contains Jupyter notebooks that reproduce the figures
 
 To run these notebooks, you must clone the repository locally as described above.
 
-### Contributing
+## Contributing
 
 Contributions to this project are welcome! If you'd like to contribute, please follow these steps:
 
@@ -103,6 +103,6 @@ Contributions to this project are welcome! If you'd like to contribute, please f
 
 4. Submit a pull request with a clear description of your changes.
 
-### License
+## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
