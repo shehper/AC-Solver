@@ -451,18 +451,27 @@ def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
 @dataclass
 class ACEnvConfig:
     max_relator_length: int = 7
-    init_presentation: np.ndarray = field(default_factory=lambda: np.array([1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]))
+    init_presentation: np.ndarray = field(
+        default_factory=lambda: np.array(
+            [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
+        )
+    )
     max_count_steps: int = 1000
     use_supermoves: bool = False
 
     @classmethod
     def from_dict(cls, config_dict):
         return cls(
-            max_relator_length=config_dict.get("max_relator_length", cls().max_relator_length),
-            init_presentation=np.array(config_dict.get("init_presentation", cls().init_presentation)),
+            max_relator_length=config_dict.get(
+                "max_relator_length", cls().max_relator_length
+            ),
+            init_presentation=np.array(
+                config_dict.get("init_presentation", cls().init_presentation)
+            ),
             max_count_steps=config_dict.get("max_count_steps", cls().max_count_steps),
-            use_supermoves=config_dict.get("use_supermoves", cls().use_supermoves)
+            use_supermoves=config_dict.get("use_supermoves", cls().use_supermoves),
         )
+
 
 class ACEnv(Env):
     # TODO: I think I forgot to mention in the paper that if an episode terminates successfully,

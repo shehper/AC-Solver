@@ -61,7 +61,9 @@ def ppo_training_loop(
         )
 
     print(f"total number of timesteps: {args.total_timesteps}, updates: {num_updates}")
-    for update in tqdm(range(1, num_updates + 1), desc="Training Progress", total=num_updates):
+    for update in tqdm(
+        range(1, num_updates + 1), desc="Training Progress", total=num_updates
+    ):
 
         # using different seed for each update to ensure reproducibility of paused-and-resumed runs
         random.seed(args.seed + update)
@@ -81,7 +83,9 @@ def ppo_training_loop(
             optimizer.param_groups[0]["lr"] = lrnow
 
         # collecting and recording data
-        for step in tqdm(range(0, args.num_steps), desc=f"Rollout Phase - {update}", leave=False):
+        for step in tqdm(
+            range(0, args.num_steps), desc=f"Rollout Phase - {update}", leave=False
+        ):
             global_step += 1 * args.num_envs
             obs[step] = next_obs
             dones[step] = next_done  # contains 1 if done else 0
