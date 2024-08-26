@@ -1,7 +1,3 @@
-Here's a draft for the README file:
-
----
-
 # AC-Env-Solver
 
 ## What Makes Math Problems Hard for Reinforcement Learning Agents: A Case Study
