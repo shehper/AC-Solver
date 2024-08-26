@@ -1,4 +1,5 @@
 # AC-Env-Solver
+## What Makes Math Problems Hard for Reinforcement Learning Agents: A Case Study
 
 - [Overview](#overview)
 - [Installation](#installation)
@@ -10,7 +11,7 @@
 - [Contributing](#contributing)
 - [License](#license)
 
-## What Makes Math Problems Hard for Reinforcement Learning Agents: A Case Study
+
 
 ### Overview
 
