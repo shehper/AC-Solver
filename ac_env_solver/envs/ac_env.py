@@ -2,6 +2,7 @@
 Implements Andrews-Curtis (AC) moves for presentations with two generators.
 """
 
+from dataclasses import dataclass, field
 import numpy as np
 from gymnasium import Env
 from gymnasium.spaces import Discrete, Box
@@ -447,27 +448,40 @@ def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
     return presentation, lengths
 
 
+@dataclass
+class ACEnvConfig:
+    max_relator_length: int = 7
+    init_presentation: np.ndarray = field(default_factory=lambda: np.array([1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]))
+    max_count_steps: int = 1000
+    use_supermoves: bool = False
+
+    @classmethod
+    def from_dict(cls, config_dict):
+        return cls(
+            max_relator_length=config_dict.get("max_relator_length", cls().max_relator_length),
+            init_presentation=np.array(config_dict.get("init_presentation", cls().init_presentation)),
+            max_count_steps=config_dict.get("max_count_steps", cls().max_count_steps),
+            use_supermoves=config_dict.get("use_supermoves", cls().use_supermoves)
+        )
+
 class ACEnv(Env):
-    # TODO: config should perhaps be replaced by a config class
-    # TODO: separare this class into two classes --- one with supermoves and one without.
     # TODO: I think I forgot to mention in the paper that if an episode terminates successfully,
     # we give a large maximum reward.
-    def __init__(self, config):
-
+    def __init__(self, config: ACEnvConfig = ACEnvConfig()):
         self.n_gen = 2
-        self.max_relator_length = config["max_relator_length"]
+        self.max_relator_length = config.max_relator_length
         # 3 names for the same thing: state, init_presentation, initial_state. Must consolidate.
-        self.state = config["init_presentation"]
-        self.initial_state = np.copy(config["init_presentation"])
-        self.max_count_steps = config["max_count_steps"]  # call it horizon_length
-        if config["use_supermoves"]:
+        self.state = config.init_presentation
+        self.initial_state = np.copy(config.init_presentation)
+        self.max_count_steps = config.max_count_steps  # call it horizon_length
+        if config.use_supermoves:
             raise NotImplementedError(
-                "Either call ACEnv_with_supermoves or set use_supermoves=False"
+                "ACEnv with supermoves is not yet implemented in this library."
             )
 
         assert (
             len(self.state) == self.n_gen * self.max_relator_length
-        ), f"The total length of init_presentation = {len(config['init_presentation'])} must be equal \
+        ), f"The total length of init_presentation = {len(config.init_presentation)} must be equal \
              to  {2 * self.max_relator_length}."
         self.count_steps = 0
         self.lengths = [
@@ -532,150 +546,6 @@ class ACEnv(Env):
 
     def render(self):
         pass
-
-
-# TODO: improve or remove ACEnv with supermoves
-# class ACEnv_w_supermoves(Env):
-#     # TODO: config should perhaps be replaced by a config class
-#     # TODO: separare this class into two classes --- one with supermoves and one without.
-#     # TODO: I think I forgot to mention in the paper that if an episode terminates successfully,
-#     # we give a large maximum reward.
-#     def __init__(self, config):
-
-#         self.n_gen = 2
-#         self.max_relator_length = config["max_relator_length"]
-#         self.state = config["init_presentation"]
-#         self.initial_state = np.copy(config["init_presentation"])
-#         self.max_count_steps = config["max_count_steps"]
-#         self.count_steps = 0
-#         self.lengths = [
-#             np.count_nonzero(
-#                 self.state[
-#                     i * self.max_relator_length : (i + 1) * self.max_relator_length
-#                 ]
-#             )
-#             for i in range(self.n_gen)
-#         ]
-#         self.max_reward = self.max_count_steps * self.max_relator_length * self.n_gen
-#         self.actions = []
-
-#         self.inverse_actions = {
-#             1: 3,
-#             2: 4,
-#             5: 9,
-#             6: 10,
-#             7: 11,
-#             8: 12,
-#             3: 1,
-#             4: 2,
-#             9: 5,
-#             10: 6,
-#             11: 7,
-#             12: 8,
-#         }
-
-#         if config["use_supermoves"]:
-#             self.supermoves = {
-#                 13: (2, 9, 4, 1, 1),  # length = 5, appears 121 times
-#                 14: (3, 5, 11, 3, 9, 11, 5, 1),  # length = 8, appears 26 times
-#                 15: (4, 12, 2, 4, 4, 10, 3, 2, 9, 4),  # length = 10, apppears 19 times
-#                 16: (
-#                     2,
-#                     12,
-#                     2,
-#                     10,
-#                     10,
-#                     12,
-#                     4,
-#                     12,
-#                     2,
-#                     4,
-#                     4,
-#                     10,
-#                     3,
-#                     2,
-#                     9,
-#                 ),  # length = 15, appears 15 times
-#             }
-
-#             n_supermoves = len(self.supermoves)
-#             original_items = list(self.supermoves.items())
-
-#             for key, val in original_items:
-#                 self.supermoves[key + n_supermoves] = tuple(
-#                     self.inverse_actions[a] for a in reversed(val)
-#                 )
-
-#             self.action_space = Discrete(12 + len(self.supermoves))
-
-#         else:
-#             self.supermoves = None
-#             self.action_space = Discrete(12)
-
-#         low = np.ones(self.max_relator_length * self.n_gen, dtype=np.int8) * (
-#             -self.n_gen
-#         )
-#         high = np.ones(self.max_relator_length * self.n_gen, dtype=np.int8) * (
-#             self.n_gen
-#         )
-#         self.observation_space = Box(low, high, dtype=np.int8)
-
-#         if len(self.state) != 2 * self.max_relator_length:
-#             print("There is an issue with length of relators.")
-
-#     def step(self, action):
-#         # action is in [0,11] but the input to ACMove is in [1,12] so we give action+1 as input to ACMove.
-#         self.actions.append(int(action + 1))
-#         # if action + 1 is a supermove, apply all actions in the supermove
-#         if self.supermoves and action + 1 in self.supermoves.keys():
-#             for a in self.supermoves[action + 1]:
-#                 self.state, self.lengths = ACMove(
-#                     a, self.state, self.max_relator_length, self.lengths
-#                 )
-#         else:
-#             # TODO: I should try it with cyclical = False
-#             self.state, self.lengths = ACMove(
-#                 action + 1, self.state, self.max_relator_length, self.lengths
-#             )
-
-#         done = sum(self.lengths) == 2
-#         reward = self.max_reward * done - sum(self.lengths) * (1 - done)
-
-#         self.count_steps += 1
-#         truncated = self.count_steps >= self.max_count_steps
-
-#         return (
-#             self.state,
-#             reward,
-#             done,
-#             truncated,
-#             {"actions": self.actions.copy()} if done else {},
-#         )
-
-#     def reset(self, *, seed=None, options=None):
-#         self.state = (
-#             np.copy(options["starting_state"])
-#             if options and "starting_state" in options
-#             else np.copy(self.initial_state)
-#         )
-#         self.lengths = [
-#             np.count_nonzero(
-#                 self.state[
-#                     i * self.max_relator_length : (i + 1) * self.max_relator_length
-#                 ]
-#             )
-#             for i in range(self.n_gen)
-#         ]
-#         self.count_steps = 0
-#         self.actions = []
-#         # self.min_lengths = self.lengths.copy()
-#         # self.min_total_length = sum(self.lengths)
-#         return self.state, {}
-
-#     def render(self):
-#         pass
-
-#     print("AC ENV LOADED")
 
 
 # all variables here: rel, nrel, full, ngen, lengths, rels, i, j, sign,

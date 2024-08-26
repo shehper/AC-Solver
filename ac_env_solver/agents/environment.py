@@ -1,6 +1,6 @@
 import numpy as np
 import gymnasium as gym
-from ac_env_solver.envs.ac_env import ACEnv
+from ac_env_solver.envs.ac_env import ACEnvConfig, ACEnv
 from ac_env_solver.agents.utils import (
     load_initial_states_from_text_file,
     convert_relators_to_presentation,
@@ -23,12 +23,14 @@ def make_env(presentation, args):
 
     def thunk():
 
-        env_config = {
+        env_config_dict = {
             "init_presentation": presentation,
             "max_relator_length": args.max_relator_length,
             "max_count_steps": args.max_env_steps,
             "use_supermoves": args.use_supermoves,
         }
+
+        env_config = ACEnvConfig.from_dict(env_config_dict)
 
         env = ACEnv(env_config)
 
@@ -54,6 +56,8 @@ def get_env(args):
         presentation = convert_relators_to_presentation(
             args.relator1, args.relator2, args.max_relator_length
         )
+
+        initial_states = [presentation]
 
         # Create a vectorized environment with the same presentation for all environments
         envs = gym.vector.SyncVectorEnv(
