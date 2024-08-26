@@ -57,17 +57,15 @@ from ac_env_solver.envs.ac_env import ACEnv
 acenv = ACEnv()
 ```
 
-### Solving the Environment with PPO
+<!-- By default, this initializes AC Environment with the following presentation from Akbulut-Kirby series, 
 
-```python
-from ac_env_solver.agents.ppo import train_ppo
-
-train_ppo()
-```
+$$
+\langle x, y | x^2 = y^3 , x y x = y x y \rangle
+$$ -->
 
 ### Performing Classical Search
 
-Specify a presentation and perform a greedy search:
+Specify a presentation and perform greedy search:
 
 ```python
 presentation = [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
@@ -75,6 +73,14 @@ presentation = [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
 from ac_env_solver.search.greedy import greedy_search
 
 greedy_search(presentation)
+```
+
+### Solving the Environment with PPO
+
+```python
+from ac_env_solver.agents.ppo import train_ppo
+
+train_ppo()
 ```
 
 ## Notebooks
