@@ -1,13 +1,5 @@
 # AC-Env-Solver
 
-Including a Table of Contents (ToC) at the top of the README is a great idea, especially if your README is detailed and has several sections. A ToC helps users quickly navigate to the sections they are interested in, improving the overall user experience.
-
-Here’s how you can incorporate a ToC into your README:
-
----
-
-# AC-Env-Solver
-
 ## Table of Contents
 - [Overview](#overview)
 - [Installation](#installation)
