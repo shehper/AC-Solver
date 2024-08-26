@@ -7,16 +7,15 @@ Implementation of PPO for AC graph.
 
 import numpy as np
 import torch
-from torch.optim import Adam
-
 import random
+from torch.optim import Adam
 from ac_env_solver.agents.ppo_agent import Agent
 from ac_env_solver.agents.args import parse_args
 from ac_env_solver.agents.environment import get_env
-from ac_env_solver.agents.training import train_ppo
+from ac_env_solver.agents.training import ppo_training_loop
 
 
-def main():
+def train_ppo():
     args = parse_args()
 
     random.seed(args.seed)
@@ -38,7 +37,7 @@ def main():
     agent = Agent(envs, args.nodes_counts).to(device)
     optimizer = Adam(agent.parameters(), lr=args.learning_rate, eps=args.epsilon)
 
-    train_ppo(
+    ppo_training_loop(
         envs,
         args,
         device,
@@ -55,4 +54,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    train_ppo()

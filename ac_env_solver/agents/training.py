@@ -14,7 +14,7 @@ from ac_env_solver.agents.utils import (
 )
 
 
-def train_ppo(
+def ppo_training_loop(
     envs,
     args,
     device,
