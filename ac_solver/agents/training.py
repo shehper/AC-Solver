@@ -1,8 +1,6 @@
 import numpy as np
 import torch
-from torch.optim import Adam
 from torch import nn
-import gymnasium as gym
 
 import random
 import time
@@ -12,15 +10,8 @@ from collections import deque
 from os import makedirs
 from os.path import join
 from ac_solver.agents.utils import (
-    Agent,
-    make_env,
     get_curr_lr,
-    load_initial_states_from_text_file,
-    convert_relators_to_presentation,
-    change_max_relator_length_of_presentation,
 )
-from ac_solver.agents.args import parse_args
-from ac_solver.agents.environment import get_env
 
 def train_ppo(envs, args, device, optimizer, agent, curr_states, success_record, ACMoves_hist, states_processed, initial_states):
     obs = torch.zeros(
