@@ -1,6 +1,5 @@
 # AC-Env-Solver
 
-## Table of Contents
 - [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -10,10 +9,6 @@
 - [Notebooks](#notebooks)
 - [Contributing](#contributing)
 - [License](#license)
-
----
-
-This ToC will make it easy for users to jump to specific sections of the README by clicking on the links.
 
 ## What Makes Math Problems Hard for Reinforcement Learning Agents: A Case Study
 
