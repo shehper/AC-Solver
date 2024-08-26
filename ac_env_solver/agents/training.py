@@ -1,14 +1,14 @@
-import numpy as np
-import torch
-from torch import nn
-
 import random
 import time
 import uuid
 import wandb
 from collections import deque
+from tqdm import tqdm
 from os import makedirs
 from os.path import join
+import numpy as np
+import torch
+from torch import nn
 from ac_env_solver.agents.utils import (
     get_curr_lr,
 )
@@ -60,10 +60,8 @@ def ppo_training_loop(
             save_code=True,
         )
 
-    start_time = time.time()
     print(f"total number of timesteps: {args.total_timesteps}, updates: {num_updates}")
-    for update in range(1, num_updates + 1):
-        print(f"Now collecting data for update number {update}")
+    for update in tqdm(range(1, num_updates + 1), desc="Training Progress", total=num_updates):
 
         # using different seed for each update to ensure reproducibility of paused-and-resumed runs
         random.seed(args.seed + update)
@@ -83,12 +81,11 @@ def ppo_training_loop(
             optimizer.param_groups[0]["lr"] = lrnow
 
         # collecting and recording data
-        for step in range(0, args.num_steps):
+        for step in tqdm(range(0, args.num_steps), desc=f"Rollout Phase - {update}", leave=False):
             global_step += 1 * args.num_envs
             obs[step] = next_obs
             dones[step] = next_done  # contains 1 if done else 0
 
-            start = time.time()
             # ALGO LOGIC: action logic
             with torch.no_grad():
                 action, logprob, _, value = agent.get_action_and_value(
@@ -132,10 +129,6 @@ def ppo_training_loop(
                             prev_path_length = len(ACMoves_hist[curr_states[i]])
                             new_path_length = len(infos["final_info"][i]["actions"])
                             if new_path_length < prev_path_length:
-                                print(
-                                    f"For state {curr_states[i]}, found a shorter path of length {new_path_length};\
-                                 previous path length: {prev_path_length}."
-                                )
                                 ACMoves_hist[curr_states[i]] = infos["final_info"][i][
                                     "actions"
                                 ]
@@ -145,7 +138,6 @@ def ppo_training_loop(
                         # record and reset episode data
                         returns_queue.append(episodic_return[i])
                         lengths_queue.append(episodic_length[i])
-                        # print(f"global_step={global_step}, episodic_return={episodic_return[i]}")
                         episode += 1
                         episodic_return[i], episodic_length[i] = 0, 0
 
@@ -175,7 +167,6 @@ def ppo_training_loop(
                         states_processed.add(curr_states[i])
                         next_obs[i] = initial_states[curr_states[i]]
                         envs.envs[i].reset(options={"starting_state": next_obs[i]})
-                        # print(f"Updating initial state of env {i} from {prev_state} to {curr_states[i]}")
 
             next_obs, next_done = torch.Tensor(next_obs).to(device), torch.Tensor(
                 done
