@@ -13,7 +13,19 @@ from ac_solver.agents.utils import (
     get_curr_lr,
 )
 
-def train_ppo(envs, args, device, optimizer, agent, curr_states, success_record, ACMoves_hist, states_processed, initial_states):
+
+def train_ppo(
+    envs,
+    args,
+    device,
+    optimizer,
+    agent,
+    curr_states,
+    success_record,
+    ACMoves_hist,
+    states_processed,
+    initial_states,
+):
     obs = torch.zeros(
         (args.num_steps, args.num_envs) + envs.single_observation_space.shape
     ).to(device)
@@ -349,4 +361,4 @@ def train_ppo(envs, args, device, optimizer, agent, curr_states, success_record,
             print(f"saving checkpoint to {out_dir}")
             torch.save(checkpoint, join(out_dir, "ckpt.pt"))
 
-    return 
+    return

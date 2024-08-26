@@ -3,6 +3,7 @@ import torch
 from torch.distributions import Categorical
 from torch import nn
 
+
 def initialize_layer(layer, std=np.sqrt(2), bias_const=0.0):
     """
     Initializes the weights and biases of a given layer.

@@ -1,3 +1,4 @@
+import numpy as np
 import gymnasium as gym
 from ac_solver.envs.ac_env import ACEnv
 from ac_solver.agents.utils import (
@@ -5,6 +6,7 @@ from ac_solver.agents.utils import (
     convert_relators_to_presentation,
     change_max_relator_length_of_presentation,
 )
+
 
 def make_env(presentation, args):
     """
@@ -43,6 +45,7 @@ def make_env(presentation, args):
         return env
 
     return thunk
+
 
 ## initialize environments
 def get_env(args):
@@ -102,5 +105,12 @@ def get_env(args):
 
         # History of actions/moves taken in the AC algorithm
         ACMoves_hist = {}
-    
-    return envs, initial_states, curr_states, success_record, ACMoves_hist, states_processed 
+
+    return (
+        envs,
+        initial_states,
+        curr_states,
+        success_record,
+        ACMoves_hist,
+        states_processed,
+    )

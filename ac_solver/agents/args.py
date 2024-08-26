@@ -2,6 +2,7 @@ import argparse
 from distutils.util import strtobool
 from os.path import basename
 
+
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument(
