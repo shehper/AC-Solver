@@ -5,10 +5,9 @@ This file contains various helper functions for agents.
 
 import math
 import numpy as np
-import gymnasium as gym
 from importlib import resources
 from ast import literal_eval
-from ac_solver.envs.ac_env import ACEnv
+
 
 def convert_relators_to_presentation(relator1, relator2, max_relator_length):
     """
@@ -66,45 +65,6 @@ def change_max_relator_length_of_presentation(presentation, new_max_length):
         relator1=relator1, relator2=relator2, max_relator_length=new_max_length
     )
     return new_presentation
-
-
-def make_env(presentation, args):
-    """
-    Creates an environment initialization function (thunk) with the specified configuration.
-
-    Parameters:
-    presentation (list): The initial presentation configuration for the environment.
-    args (Namespace): A set of arguments containing the environment parameters such as max_relator_length, max_env_steps,
-                      use_supermoves, norm_rewards, gamma, clip_rewards, min_rew, and max_rew.
-
-    Returns:
-    function: A thunk (a function with no arguments) that initializes and returns the environment when called.
-    """
-
-    def thunk():
-
-        env_config = {
-            "init_presentation": presentation,
-            "max_relator_length": args.max_relator_length,
-            "max_count_steps": args.max_env_steps,
-            "use_supermoves": args.use_supermoves,
-        }
-
-        env = ACEnv(env_config)
-
-        # optionally normalize and / or clip rewards
-        if args.norm_rewards:
-            env = gym.wrappers.NormalizeReward(env, gamma=args.gamma)
-
-        if args.clip_rewards:
-            assert args.min_rew < args.max_rew, "min_rew must be less than max_rew"
-            env = gym.wrappers.TransformReward(
-                env, lambda reward: np.clip(reward, args.min_rew, args.max_rew)
-            )
-
-        return env
-
-    return thunk
 
 
 def load_initial_states_from_text_file(states_type):
