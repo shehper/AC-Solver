@@ -6,16 +6,12 @@ import torch
 import torch.nn as nn
 import gymnasium as gym
 from argparse import Namespace
-from ac_solver.agents.utils import (
-    initialize_layer,
-    build_network,
-    Agent,
-    make_env,
-    get_curr_lr,
-    convert_relators_to_presentation,
-)
-from ac_solver.agents.ppo import parse_args
 from ac_solver.envs.ac_env import ACEnv
+from ac_solver.agents.args import parse_args
+from ac_solver.agents.ppo_agent import initialize_layer, build_network, Agent
+from ac_solver.agents.training import get_curr_lr
+from ac_solver.agents.utils import convert_relators_to_presentation
+from ac_solver.agents.environment import make_env
 
 
 # Sample input data for testing
