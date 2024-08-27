@@ -2,7 +2,7 @@
 
 - [Overview](#overview)
 - [Andrews-Curtis Conjecture](#Andrews-Curtis-Conjecture)
-- [Abstract and paper](#abstact-and-paper)
+- [Abstract and paper](#abstract-and-paper)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Initializing the AC Environment](#initializing-the-ac-environment)
