@@ -12,7 +12,7 @@ from ac_env_solver.envs.ac_moves import ACMove
 @dataclass
 class ACEnvConfig:
     max_relator_length: int = 7
-    init_presentation: np.ndarray = field(
+    initial_state: np.ndarray = field(
         default_factory=lambda: np.array(
             [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
         )
@@ -21,14 +21,19 @@ class ACEnvConfig:
     use_supermoves: bool = False
     max_count_steps = horizon_length # Alias for backwards compatibility
 
+    # assert (
+    #     len(self.state) == self.n_gen * self.max_relator_length
+    # ), f"The total length of initial_state = {len(config.initial_state)} must be equal \
+    #         to  {2 * self.max_relator_length}."  TODO: fix this
+
     @classmethod
     def from_dict(cls, config_dict):
         return cls(
             max_relator_length=config_dict.get(
                 "max_relator_length", cls().max_relator_length
             ),
-            init_presentation=np.array(
-                config_dict.get("init_presentation", cls().init_presentation)
+            initial_state=np.array(
+                config_dict.get("initial_state", cls().initial_state)
             ),
             horizon_length=config_dict.get("horizon_length", cls().horizon_length),
             use_supermoves=config_dict.get("use_supermoves", cls().use_supermoves),
@@ -36,24 +41,18 @@ class ACEnvConfig:
 
 
 class ACEnv(Env):
-    # TODO: I think I forgot to mention in the paper that if an episode terminates successfully,
-    # we give a large maximum reward.
     def __init__(self, config: ACEnvConfig = ACEnvConfig()):
         self.n_gen = 2
         self.max_relator_length = config.max_relator_length
-        # 3 names for the same thing: state, init_presentation, initial_state. Must consolidate.
-        self.state = config.init_presentation
-        self.initial_state = np.copy(config.init_presentation)
+        # 3 names for the same thing: state, initial_state, initial_state. Must consolidate.
+        self.state = config.initial_state
+        self.initial_state = np.copy(config.initial_state)
         self.horizon_length = config.horizon_length  # call it horizon_length
         if config.use_supermoves:
             raise NotImplementedError(
                 "ACEnv with supermoves is not yet implemented in this library."
             )
-
-        assert (
-            len(self.state) == self.n_gen * self.max_relator_length
-        ), f"The total length of init_presentation = {len(config.init_presentation)} must be equal \
-             to  {2 * self.max_relator_length}."
+        
         self.count_steps = 0
         self.lengths = [
             np.count_nonzero(
@@ -63,9 +62,6 @@ class ACEnv(Env):
             )
             for i in range(self.n_gen)
         ]
-        self.max_reward = self.horizon_length * self.max_relator_length * self.n_gen
-        self.action_space = Discrete(12)
-        self.actions = []
 
         low = np.ones(self.max_relator_length * self.n_gen, dtype=np.int8) * (
             -self.n_gen
@@ -74,6 +70,9 @@ class ACEnv(Env):
             self.n_gen
         )
         self.observation_space = Box(low, high, dtype=np.int8)
+        self.action_space = Discrete(12)
+        self.max_reward = self.horizon_length * self.max_relator_length * self.n_gen
+        self.actions = []
 
     def step(self, action):
         # action is in [0,11] but the input to ACMove is in [1,12] so we give action+1 as input to ACMove.

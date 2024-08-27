@@ -26,7 +26,7 @@ def make_env(presentation, args):
     def thunk():
 
         env_config_dict = {
-            "init_presentation": presentation,
+            "initial_state": presentation,
             "max_relator_length": args.max_relator_length,
             "horizon_length": args.horizon_length,
             "use_supermoves": args.use_supermoves,
