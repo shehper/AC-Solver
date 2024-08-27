@@ -8,7 +8,8 @@ python greedy.py
 
 import numpy as np
 import heapq
-from ac_env_solver.envs.ac_env import ACMove, is_presentation_trivial
+from ac_env_solver.envs.utils import is_presentation_trivial
+from ac_env_solver.envs.ac_moves import ACMove
 
 
 def greedy_search(
