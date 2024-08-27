@@ -14,7 +14,7 @@
 
 ## Overview
 
-This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."* It includes an implementation of the AC Environment in Gymnasium, two classical search algorithms (BFS and Greedy Search), and a PPO agent that works within this environment. Additionally, the repository contains Jupyter notebooks for reproducing the analyses and figures presented in the paper.
+This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."* It includes an implementation of the Andrews-Curtis (AC) Environment in Gymnasium, two classical search algorithms (BFS and Greedy Search), and a PPO agent that works within this environment. Additionally, the repository contains Jupyter notebooks for reproducing the analyses and figures presented in the paper.
 
 ## Andrews-Curtis Conjecture
 Andrews-Curtis conjecture is a long-standing open problem in combinatorial group theory and low-dimensional topology. It states that every balanced presentation of the trivial group could be transformed into the trivial presentation using actions on relators: inverses, conjugation and concatenation. More precisely, given presentation of trivial group of form $<x_{1}, x_{2}, \ldots, x_{n} | r_{1}, r_{2}, \ldots, r_{n}>$ can be transformed into $<x_{1}, x_{2}, \ldots, x_{n} |x_{1}, x_{2}, \ldots, x_{n}>$ using following set of moves:
