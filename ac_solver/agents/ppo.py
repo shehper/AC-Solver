@@ -9,10 +9,10 @@ import numpy as np
 import torch
 import random
 from torch.optim import Adam
-from ac_env_solver.agents.ppo_agent import Agent
-from ac_env_solver.agents.args import parse_args
-from ac_env_solver.agents.environment import get_env
-from ac_env_solver.agents.training import ppo_training_loop
+from ac_solver.agents.ppo_agent import Agent
+from ac_solver.agents.args import parse_args
+from ac_solver.agents.environment import get_env
+from ac_solver.agents.training import ppo_training_loop
 
 
 def train_ppo():

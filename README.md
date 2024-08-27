@@ -21,7 +21,7 @@ This repository accompanies the paper *"What Makes Math Problems Hard for Reinfo
 To work with the AC Environment or build upon it, you can simply install the package using pip:
 
 ```bash
-pip install ac_env_solver
+pip install ac_solver
 ```
 
 If you wish to reproduce the plots and analyses in the paper, you will need to clone the repository locally. Here is the recommended process:
@@ -29,8 +29,8 @@ If you wish to reproduce the plots and analyses in the paper, you will need to c
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/AC-Env-Solver.git
-   cd AC-Env-Solver
+   git clone https://github.com/yourusername/AC-Solver.git
+   cd AC-Solver
    ```
 
 2. Install the package locally using Poetry:
@@ -52,7 +52,7 @@ After installation, you can start using the environment and agents as follows:
 ### Initializing the AC Environment
 
 ```python
-from ac_env_solver.envs.ac_env import ACEnv
+from ac_solver.envs.ac_env import ACEnv
 acenv = ACEnv()
 ```
 
@@ -68,14 +68,14 @@ Specify a presentation and perform greedy search:
 
 ```python
 presentation = [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
-from ac_env_solver.search.greedy import greedy_search
+from ac_solver.search.greedy import greedy_search
 greedy_search(presentation)
 ```
 
 ### Solving the Environment with PPO
 
 ```python
-from ac_env_solver.agents.ppo import train_ppo
+from ac_solver.agents.ppo import train_ppo
 train_ppo()
 ```
 

@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "ac_env_solver"
+name = "ac_solver"
 version = "0.1.0"
 description = ""
 authors = ["shehper <ali.shehper1@gmail.com>"]

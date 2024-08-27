@@ -26,7 +26,7 @@ def load_initial_states_from_text_file(states_type):
     file_name_prefix = "greedy_solved" if states_type == "solved" else "all"
     file_name = f"{file_name_prefix}_presentations.txt"
     with resources.open_text(
-        "ac_env_solver.search.miller_schupp.data", file_name
+        "ac_solver.search.miller_schupp.data", file_name
     ) as file:
         initial_states = [literal_eval(line.strip()) for line in file]
 

@@ -1,5 +1,5 @@
 import numpy as np
-from ac_env_solver.search.breadth_first import (
+from ac_solver.search.breadth_first import (
     bfs,
 )  # Ensure this imports the bfs function correctly
 

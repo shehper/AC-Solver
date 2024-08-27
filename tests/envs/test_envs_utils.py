@@ -1,5 +1,5 @@
 import numpy as np
-from ac_env_solver.envs.utils import convert_relators_to_presentation
+from ac_solver.envs.utils import convert_relators_to_presentation
 
 
 # Test convert_relators_to_presentation function

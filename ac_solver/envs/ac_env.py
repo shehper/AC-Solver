@@ -6,7 +6,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from gymnasium import Env
 from gymnasium.spaces import Discrete, Box
-from ac_env_solver.envs.ac_moves import ACMove
+from ac_solver.envs.ac_moves import ACMove
 
 
 @dataclass

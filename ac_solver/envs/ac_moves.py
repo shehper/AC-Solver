@@ -1,4 +1,4 @@
-from ac_env_solver.envs.utils import simplify_presentation
+from ac_solver.envs.utils import simplify_presentation
 
 
 def concatenate_relators(presentation, max_relator_length, i, j, sign, lengths):
