@@ -26,7 +26,7 @@ Andrews-Curtis conjecture is a long-standing open problem in combinatorial group
 - conjugation: changing some $r_{i}$ with $qr_{i}q^{-1}$ for some $q$,
 - concatenation: changing some $r_{i}$ with $r_{i}r_{j}$.
 
-While many counterexamples to this conjecture were proposed over the years, finding trivializing sequences is notoriously hard. Many aspects of this math problem make it a perfect setup for studying how Reinforcement Learning can identify rare and long sequences of moves that close a desired goal.
+While many counterexamples to this conjecture were proposed over the years, finding trivializing sequences is notoriously hard. Many aspects of this math problem make it a perfect setup for studying how Reinforcement Learning can identify rare and long sequences of moves that close the desired goal.
 
 ## Abstract and paper
 
