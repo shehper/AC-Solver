@@ -128,8 +128,8 @@ By default, this command trains the PPO agent on an AC graph with initial states
 
 The `notebooks/` directory contains Jupyter notebooks that reproduce the figures and results discussed in the paper:
 
-- **`Sections-1-3-and-4.ipynb`**: Reproduces figures in Sections 1, 3, and 4 of the paper.
-- **`Section-5.ipynb`**: Reproduces figures in Section 5 of the paper.
+- **`Classical-Search-and-PPO-in-AC-Environment.ipynb`**: Reproduces figures in Sections 1, 3, and 4 of the paper.
+- **`Scaling-PPO-in-AC-Environment.ipynb`**: Reproduces figures in Section 5 of the paper.
 - **`Stable-AK3.ipynb`**: Provides code demonstrating that AK(3) is a stably AC-trivial presentation, a major result of the paper.
 
 To run these notebooks, you must clone the repository locally as described above.
