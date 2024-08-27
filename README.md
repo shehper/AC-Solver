@@ -59,15 +59,11 @@ If you wish to reproduce the plots and analyses in the paper, you will need to c
    cd AC-Solver
    ```
 
-2. Install the package locally using Poetry:
+2. Make a virtual environment and install the package locally using pip:
 
    ```bash
-   poetry install
-   ```
-
-   Alternatively, you can install the package using pip:
-
-   ```bash
+   python -m venv ./env
+   source ./env/bin/activate
    pip install .
    ```
 
