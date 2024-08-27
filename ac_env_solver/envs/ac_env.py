@@ -75,11 +75,9 @@ class ACEnv(Env):
         self.actions = []
 
     def step(self, action):
-        # action is in [0,11] but the input to ACMove is in [1,12] so we give action+1 as input to ACMove.
-        self.actions.append(int(action + 1))
-        # if action + 1 is a supermove, apply all actions in the supermove
+        self.actions += [action]
         self.state, self.lengths = ACMove(
-            action + 1, self.state, self.max_relator_length, self.lengths
+            action, self.state, self.max_relator_length, self.lengths
         )
 
         done = sum(self.lengths) == 2

@@ -162,21 +162,21 @@ def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
     The move to apply and the relator it is applied to are decided by move_id.
 
     Parameters:
-    move_id: An int in range [1, 12] (both inclusive), deciding which AC move to apply.
+    move_id: An int in range [0, 11] (both inclusive), deciding which AC move to apply.
             Odd values affect r_1; even values affect r_0.
             The complete mappling between move_id and moves is as below:
-            1. r_1 --> r_1 r_0
-            2. r_0 --> r_0 r_1^{-1}
-            3. r_1 --> r_1 r_0^{-1}
-            4. r_0 --> r_0 r_1
-            5: r_1 --> x_0^{-1} r_1 x_0
-            6: r_0 ---> x_1^{-1} r_0 x_1
-            7: r_1 --> x_1^{-1} r_1 x_1
-            8: r_0 ---> x_0 r_0 x_0^{-1}
-            9: r_1 --> x_0 r_1 x_0^{-1}
-            10: r_0 --> x_1 r_0 x_1^{-1}
-            11: r_1 --> x_1 r_1 x_1^{-1}
-            12: r_0 --> x_0^{-1} r_0 x_0
+            0. r_1 --> r_1 r_0
+            1. r_0 --> r_0 r_1^{-1}
+            2. r_1 --> r_1 r_0^{-1}
+            3. r_0 --> r_0 r_1
+            4: r_1 --> x_0^{-1} r_1 x_0
+            5: r_0 ---> x_1^{-1} r_0 x_1
+            6: r_1 --> x_1^{-1} r_1 x_1
+            7: r_0 ---> x_0 r_0 x_0^{-1}
+            8: r_1 --> x_0 r_1 x_0^{-1}
+            9: r_0 --> x_1 r_0 x_1^{-1}
+            10: r_1 --> x_1 r_1 x_1^{-1}
+            11: r_0 --> x_0^{-1} r_0 x_0
     presentation: A NumPy Array representation the input presentation.
     max_relator_length: The maximum length a relator is allowed to take.
                         If the application of an AC move results in a relator with length larger than max_relator_length,
@@ -186,16 +186,18 @@ def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
     """
 
     assert move_id in range(
-        1, 13
-    ), f"Expect n to be in range 1-12 (both inclusive); got {move_id}"
+        0, 12
+    ), f"Expect n to be in range 0-11 (both inclusive); got {move_id}"
 
-    if move_id in range(1, 5):
+    if move_id in range(0, 4):
+        move_id += 1
         i = move_id % 2
         j = 1 - i
         sign_parity = ((move_id - i) // 2) % 2
         sign = (-1) ** sign_parity
         move = concatenate_relators
-    elif move_id in range(5, 13):
+    elif move_id in range(4, 12):
+        move_id += 1
         i = move_id % 2
         jp = ((move_id - i) // 2) % 2  # = 0 or 1
         sign_parity = ((move_id - i - 2 * jp) // 4) % 2
