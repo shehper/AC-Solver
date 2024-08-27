@@ -1,5 +1,5 @@
+import math
 import random
-import time
 import uuid
 import wandb
 from collections import deque
@@ -9,10 +9,55 @@ from os.path import join
 import numpy as np
 import torch
 from torch import nn
-from ac_env_solver.agents.utils import (
-    get_curr_lr,
-)
 
+def get_curr_lr(n_update, lr_decay, warmup, max_lr, min_lr, total_updates):
+    """
+    Calculates the current learning rate based on the update step, learning rate decay schedule,
+    warmup period, and other parameters.
+
+    Parameters:
+    n_update (int): The current update step (1-indexed).
+    lr_decay (str): The type of learning rate decay to apply ("linear" or "cosine").
+    warmup (float): The fraction of total updates to be used for the learning rate warmup.
+    max_lr (float): The maximum learning rate.
+    min_lr (float): The minimum learning rate.
+    total_updates (int): The total number of updates.
+
+    Returns:
+    float: The current learning rate.
+
+    Raises:
+    NotImplementedError: If an unsupported lr_decay type is provided.
+    """
+    # Convert to 0-indexed for internal calculations
+    n_update -= 1
+    total_updates -= 1
+
+    # Calculate the end of the warmup period
+    warmup_period_end = total_updates * warmup
+
+    if warmup_period_end > 0 and n_update <= warmup_period_end:
+        lrnow = max_lr * n_update / warmup_period_end
+    else:
+        if lr_decay == "linear":
+            slope = (max_lr - min_lr) / (warmup_period_end - total_updates)
+            intercept = max_lr - slope * warmup_period_end
+            lrnow = slope * n_update + intercept
+
+        elif lr_decay == "cosine":
+            cosine_arg = (
+                (n_update - warmup_period_end)
+                / (total_updates - warmup_period_end)
+                * math.pi
+            )
+            lrnow = min_lr + (max_lr - min_lr) * (1 + math.cos(cosine_arg)) / 2
+
+        else:
+            raise NotImplementedError(
+                "Only 'linear' and 'cosine' lr-schedules are available."
+            )
+
+    return lrnow
 
 def ppo_training_loop(
     envs,
