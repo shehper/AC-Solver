@@ -35,7 +35,7 @@ Using a long-standing conjecture from combinatorial group theory, we explore, fr
 [TODO: add link to arxiv]
 
 ## Andrews-Curtis Conjecture
-Andrews-Curtis conjecture is a long-standing open problem in combinatorial group theory and low-dimensional topology. It states that every balanced presentation of the trivial group could be transformed into the trivial presentation using actions on relators: inverses, conjugation and concatenation. More precisely, given presentation of trivial group of form $<x_{1}, x_{2}, \ldots, x_{n} | r_{1}, r_{2}, \ldots, r_{n}>$ can be transformed into $<x_{1}, x_{2}, \ldots, x_{n} |x_{1}, x_{2}, \ldots, x_{n}>$ using following set of moves:
+Andrews-Curtis conjecture is a long-standing open problem in combinatorial group theory and low-dimensional topology. It states that every balanced presentation of the trivial group could be transformed into the trivial presentation using actions on relators: inverses, conjugation and concatenation. More precisely, given presentation of trivial group of form $\langle x_{1}, x_{2}, \ldots, x_{n} | r_{1}, r_{2}, \ldots, r_{n} \rangle$ can be transformed into $\langle x_{1}, x_{2}, \ldots, x_{n} |x_{1}, x_{2}, \ldots, x_{n} \rangle$ using following set of moves:
 - inverse: changing some $r_{i}$ with $r_{i}^{-1}$,
 - conjugation: changing some $r_{i}$ with $qr_{i}q^{-1}$ for some $q$,
 - concatenation: changing some $r_{i}$ with $r_{i}r_{j}$.
@@ -73,9 +73,9 @@ After installation, you can start using the environment and agents as follows:
 
 ### Initializing the AC Environment
 
-The `ACEnv` class is initialized using the `ACEnvConfig` class. By default, `ACEnv()` initializes the environment with the trivial presentation `<x, y>`, represented in code as `[1, 0, 2, 0]`.
+The `ACEnv` class is initialized using the `ACEnvConfig` class. By default, `ACEnv()` initializes the environment with the trivial presentation $\langle x, y | x, y \rangle$, represented in code as `[1, 0, 2, 0]`.
 
-If you want to specify your own presentation, you can do so using a list. For example, to initialize the environment with the simplest presentation from the Akbulut-Kirby series, `<x^2 = y^3, xyx = y xy>`, you can follow these steps:
+If you want to specify your own presentation, you can do so using a list. For example, to initialize the environment with the simplest presentation from the Akbulut-Kirby series, $\langle x, y | x^2 = y^3, xyx = yxy \rangle$, you can follow these steps:
 
 0. Import the classes. 
    ```python
