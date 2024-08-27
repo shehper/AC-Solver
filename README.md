@@ -1,6 +1,8 @@
 # AC-Solver
 
 - [Overview](#overview)
+- [Andrews-Curtis Conjecture](#Andrews-Curtis-Conjecture)
+- [Abstract and paper](#abstact-and-paper)
 - [Installation](#installation)
 - [Usage](#usage)
   - [Initializing the AC Environment](#initializing-the-ac-environment)
@@ -8,6 +10,8 @@
   - [Performing Classical Search](#performing-classical-search)
 - [Notebooks](#notebooks)
 - [Contributing](#contributing)
+- [Contact info](#contact-info)
+- [Citation](#citation)
 - [License](#license)
 
 
@@ -122,7 +126,11 @@ Contributions to this project are welcome! If you'd like to contribute, please f
 ## Contact info
 [TODO]
 ## Citation
-[TODO}
+```python
+@article{
+}
+```
+[TODO]
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.
