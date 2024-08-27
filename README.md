@@ -16,6 +16,21 @@
 
 This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."* It includes an implementation of the AC Environment in Gymnasium, two classical search algorithms (BFS and Greedy Search), and a PPO agent that works within this environment. Additionally, the repository contains Jupyter notebooks for reproducing the analyses and figures presented in the paper.
 
+## Andrews-Curtis Conjecture
+Andrews-Curtis conjecture is a long-standing open problem in combinatorial group theory and low-dimensional topology. It states that every balanced presentation of the trivial group could be transformed into the trivial presentation using actions on relators: inverses, conjugation and concatenation. More precisely, given presentation of trivial group of form $<x_{1}, x_{2}, \ldots, x_{n} | r_{1}, r_{2}, \ldots, r_{n}>$ can be transformed into $<x_{1}, x_{2}, \ldots, x_{n} |x_{1}, x_{2}, \ldots, x_{n}>$ using following set of moves:
+- inverse: changing some $r_{i}$ with $r_{i}^{-1}$,
+- conjugation: changing some $r_{i}$ with $qr_{i}q^{-1}$ for some $q$,
+- concatenation: changing some $r_{i}$ with $r_{i}r_{j}$.
+
+Many counterexamples were proposed for this conjecture. Finding such trivializing sequences is notoriously hard to find. Characteristics of this problem make it a perfect setup for Reinforcement Learning.
+
+## Abstract and paper
+
+Using a long-standing conjecture from combinatorial group theory, we explore, from multiple angles, the challenges of finding rare instances carrying disproportionately high rewards. Based on lessons learned in the mathematical context defined by the Andrews--Curtis conjecture, we propose algorithmic improvements that can be relevant in other domains with ultra-sparse reward problems. Although our case study can be formulated as a game, its shortest winning sequences are potentially $10^6$ or $10^9$ times longer than those encountered in chess. In the process of our study, we demonstrate that one of the potential counterexamples due to Akbulut and Kirby, whose status escaped direct mathematical methods for 39 years, is stably AC-trivial.
+
+[![tests](https://img.shields.io/github/actions/workflow/status/j3soon/arxiv-utils/test-with-jest.yaml?label=unit-tests)](https://arxiv.org/)]
+[TODO: add arxiv link to the button]
+
 ## Installation
 
 To work with the AC Environment or build upon it, you can simply install the package using pip:
@@ -104,6 +119,10 @@ Contributions to this project are welcome! If you'd like to contribute, please f
 
 4. Submit a pull request with a clear description of your changes.
 
+## Contact info
+[TODO]
+## Citation
+[TODO}
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.
