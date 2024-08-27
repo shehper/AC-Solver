@@ -55,7 +55,7 @@ If you wish to reproduce the plots and analyses in the paper, you will need to c
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/AC-Solver.git
+   git clone https://github.com/shehper/AC-Solver.git
    cd AC-Solver
    ```
 
