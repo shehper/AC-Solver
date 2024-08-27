@@ -28,8 +28,8 @@ Many counterexamples were proposed for this conjecture. Finding such trivializin
 
 Using a long-standing conjecture from combinatorial group theory, we explore, from multiple angles, the challenges of finding rare instances carrying disproportionately high rewards. Based on lessons learned in the mathematical context defined by the Andrews--Curtis conjecture, we propose algorithmic improvements that can be relevant in other domains with ultra-sparse reward problems. Although our case study can be formulated as a game, its shortest winning sequences are potentially $10^6$ or $10^9$ times longer than those encountered in chess. In the process of our study, we demonstrate that one of the potential counterexamples due to Akbulut and Kirby, whose status escaped direct mathematical methods for 39 years, is stably AC-trivial.
 
-[![tests](https://img.shields.io/github/actions/workflow/status/j3soon/arxiv-utils/test-with-jest.yaml?label=unit-tests)](https://arxiv.org/)]
-[TODO: add arxiv link to the button]
+[Read full paper on arxiv](https://arxiv.org/)
+[TODO: add link to arxiv]
 
 ## Installation
 
