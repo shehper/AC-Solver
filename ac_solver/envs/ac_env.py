@@ -19,7 +19,7 @@ class ACEnvConfig:
     )
     horizon_length: int = 1000
     use_supermoves: bool = False
-    max_count_steps = horizon_length # Alias for backwards compatibility
+    max_count_steps = horizon_length  # Alias for backwards compatibility
 
     # assert (
     #     len(self.state) == self.n_gen * self.max_relator_length
@@ -52,7 +52,7 @@ class ACEnv(Env):
             raise NotImplementedError(
                 "ACEnv with supermoves is not yet implemented in this library."
             )
-        
+
         self.count_steps = 0
         self.lengths = [
             np.count_nonzero(

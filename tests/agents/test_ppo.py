@@ -29,7 +29,7 @@ def sample_args():
         max_relator_length=7,
         relator1=[1, 1, -2, -2, -2],
         relator2=[1, 2, 1, -2, -1, -2],
-        max_env_steps=2000,
+        horizon_length=2000,
         use_supermoves=False,
         nodes_counts=[256, 256],
         is_loss_clip=True,

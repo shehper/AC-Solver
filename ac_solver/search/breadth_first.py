@@ -11,6 +11,7 @@ from collections import deque
 from ac_solver.envs.utils import is_array_valid_presentation, is_presentation_trivial
 from ac_solver.envs.ac_moves import ACMove
 
+
 def bfs(
     presentation,
     max_nodes_to_explore=10000,
@@ -53,7 +54,7 @@ def bfs(
     # a set containing states that have already been seen
     state_tup = tuple(initial_state)
     tree_nodes = {state_tup}
-    init_path = [(0, total_initial_length)]
+    init_path = [(-1, total_initial_length)]
     to_explore = deque([(state_tup, init_path)])  #
     min_length = sum(word_lengths)
 
@@ -65,7 +66,7 @@ def bfs(
             np.count_nonzero(presentation[max_relator_length:]),
         ]
 
-        for action in range(1, 13):
+        for action in range(0, 12):
             new_state, new_word_lengths = ACMove(
                 move_id=action,
                 presentation=state,

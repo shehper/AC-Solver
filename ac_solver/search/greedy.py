@@ -58,7 +58,7 @@ def greedy_search(
             path_length,
             tuple(initial_state),
             tuple(word_lengths),
-            [(0, total_initial_length)],
+            [(-1, total_initial_length)],
         )
     ]
     heapq.heapify(to_explore)
@@ -73,7 +73,7 @@ def greedy_search(
         state = np.array(state_tuple, dtype=np.int8)  # convert tuple to state
         word_lengths = list(word_lengths)
 
-        for action in range(1, 13):
+        for action in range(0, 12):
             new_state, new_lengths = ACMove(
                 action,
                 state,

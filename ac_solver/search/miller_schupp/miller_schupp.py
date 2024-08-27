@@ -14,7 +14,7 @@ import os
 import argparse
 import numpy as np
 from itertools import product
-from ac_solver.envs.ac_env import simplify_relator
+from ac_solver.envs.utils import simplify_relator
 
 
 def generate_miller_schupp_presentations(n, max_w_len):

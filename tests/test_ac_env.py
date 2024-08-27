@@ -1,11 +1,13 @@
 import pytest
 import numpy as np
-from ac_solver.envs.ac_env import (
+from ac_solver.envs.utils import (
     simplify_relator,
     is_array_valid_presentation,
     is_presentation_trivial,
     generate_trivial_states,
     simplify_presentation,
+)
+from ac_solver.envs.ac_moves import (
     concatenate_relators,
     conjugate,
     ACMove,
@@ -494,19 +496,19 @@ def test_ACMove():
     # TODO: include more tests here.
     presentations = {
         "initial": np.array([1, 2, 0, 0, -2, 0, 0, 0]),
-        "expected_concat_1": np.array(
+        "expected_concat_0": np.array(
             [1, 2, 0, 0, 1, 0, 0, 0]
         ),  # Example expected result
-        "expected_concat_2": np.array(
+        "expected_concat_1": np.array(
             [1, 2, 2, 0, -2, 0, 0, 0]
         ),  # Example expected result
-        "expected_concat_3": np.array(
+        "expected_concat_2": np.array(
             [1, 2, 0, 0, -2, -2, -1, 0]
         ),  # Example expected result
-        "expected_conj_5": np.array(
+        "expected_conj_4": np.array(
             [1, 2, 0, 0, -2, 0, 0, 0]
         ),  # Example expected result
-        "expected_conj_6": np.array(
+        "expected_conj_5": np.array(
             [1, 2, 0, 0, -2, 0, 0, 0]
         ),  # Example expected result
     }
@@ -516,7 +518,7 @@ def test_ACMove():
     cyclical = True
 
     # Test concatenate moves
-    for n in range(1, 4):
+    for n in range(0, 3):
         result_presentation, result_lengths = ACMove(
             n, presentations["initial"], max_relator_length, lengths, cyclical=cyclical
         )
@@ -526,7 +528,7 @@ def test_ACMove():
         ), f"Test failed for concatenate move {n}. Expected {expected_presentation}, but got {result_presentation}"
 
     # Test conjugate moves
-    for n in range(5, 7):
+    for n in range(4, 6):
         result_presentation, result_lengths = ACMove(
             n, presentations["initial"], max_relator_length, lengths, cyclical=cyclical
         )
