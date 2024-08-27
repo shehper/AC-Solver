@@ -5,6 +5,14 @@ description = ""
 authors = ["shehper <ali.shehper1@gmail.com>"]
 readme = "README.md"
 
+packages = [
+    { include = "ac_solver" }
+]
+
+include = [
+    "ac_solver/search/miller_schupp/data/*"
+]
+
 [tool.poetry.dependencies]
 python = ">=3.9,<3.12"
 appdirs = "1.4.4"
