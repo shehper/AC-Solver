@@ -1,4 +1,4 @@
-# AC-Env-Solver
+# AC-Solver
 
 - [Overview](#overview)
 - [Installation](#installation)
