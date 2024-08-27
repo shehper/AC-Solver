@@ -1,37 +1,50 @@
 """
-Implements Andrews-Curtis (AC) Environment for balanced presentations with two generators.
+Andrews-Curtis (AC) Environment for balanced presentations with two generators.
 """
 
 from dataclasses import dataclass, field
+from typing import Union
 import numpy as np
 from gymnasium import Env
 from gymnasium.spaces import Discrete, Box
 from ac_solver.envs.ac_moves import ACMove
+from ac_solver.envs.utils import is_array_valid_presentation
 
 
 @dataclass
 class ACEnvConfig:
-    max_relator_length: int = 7
-    initial_state: np.ndarray = field(
-        default_factory=lambda: np.array(
-            [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
-        )
-    )
-    horizon_length: int = 1000
-    use_supermoves: bool = False
-    max_count_steps = horizon_length  # Alias for backwards compatibility
+    initial_state: Union[np.ndarray, list] = field(
+        default_factory=lambda: np.array([1, 0, 2, 0])
+    )  # trivial state <x, y>
+    horizon_length: any = 1000
+    use_supermoves: any = False
 
-    # assert (
-    #     len(self.state) == self.n_gen * self.max_relator_length
-    # ), f"The total length of initial_state = {len(config.initial_state)} must be equal \
-    #         to  {2 * self.max_relator_length}."  TODO: fix this
+    def __post_init__(self):
+        # Convert initial_state to a numpy array if it's a list
+        if isinstance(self.initial_state, list):
+            self.initial_state = np.array(self.initial_state)
+
+        # Assert that initial_state is a 1-dimensional numpy array
+        if not isinstance(self.initial_state, np.ndarray):
+            raise TypeError("initial_state must be a numpy array")
+        if self.initial_state.ndim != 1:
+            raise ValueError("initial_state must be a 1-dimensional array")
+        if len(self.initial_state) % 2 != 0:
+            raise ValueError("initial state must have even length")
+        if not is_array_valid_presentation(self.initial_state):
+            raise ValueError("initial state must be a valid presentation")
+
+    @property
+    def max_relator_length(self):
+        return len(self.initial_state) // 2
+
+    @property
+    def max_relator_length(self):
+        return len(self.initial_state) // 2
 
     @classmethod
     def from_dict(cls, config_dict):
         return cls(
-            max_relator_length=config_dict.get(
-                "max_relator_length", cls().max_relator_length
-            ),
             initial_state=np.array(
                 config_dict.get("initial_state", cls().initial_state)
             ),
@@ -42,27 +55,16 @@ class ACEnvConfig:
 
 class ACEnv(Env):
     def __init__(self, config: ACEnvConfig = ACEnvConfig()):
-        self.n_gen = 2
+        self.n_gen = 2  # number of generators of the presentation
         self.max_relator_length = config.max_relator_length
-        # 3 names for the same thing: state, initial_state, initial_state. Must consolidate.
-        self.state = config.initial_state
-        self.initial_state = np.copy(config.initial_state)
-        self.horizon_length = config.horizon_length  # call it horizon_length
+        self.initial_state = config.initial_state
+        self.horizon_length = config.horizon_length
         if config.use_supermoves:
             raise NotImplementedError(
                 "ACEnv with supermoves is not yet implemented in this library."
             )
 
-        self.count_steps = 0
-        self.lengths = [
-            np.count_nonzero(
-                self.state[
-                    i * self.max_relator_length : (i + 1) * self.max_relator_length
-                ]
-            )
-            for i in range(self.n_gen)
-        ]
-
+        # state space
         low = np.ones(self.max_relator_length * self.n_gen, dtype=np.int8) * (
             -self.n_gen
         )
@@ -70,9 +72,25 @@ class ACEnv(Env):
             self.n_gen
         )
         self.observation_space = Box(low, high, dtype=np.int8)
+
+        # action space
         self.action_space = Discrete(12)
+
+        # max-reward needed for reward function
         self.max_reward = self.horizon_length * self.max_relator_length * self.n_gen
-        self.actions = []
+
+        # variables to keep track of current state of the environment
+        self.state = np.copy(self.initial_state)  # current state
+        self.count_steps = 0  # number of environment steps
+        self.lengths = [
+            np.count_nonzero(
+                self.state[
+                    i * self.max_relator_length : (i + 1) * self.max_relator_length
+                ]
+            )
+            for i in range(self.n_gen)
+        ]  # lengths of relators in the current state
+        self.actions = []  # list of actions from the initial state
 
     def step(self, action):
         self.actions += [action]
@@ -115,25 +133,3 @@ class ACEnv(Env):
     def render(self):
         pass
 
-
-# all variables here: rel, nrel, full, ngen, lengths, rels, i, j, sign,
-# nrel is length of relator: probably should call it max_relator_len
-# rel: relator
-# rels: presentation
-# lengths: relator_lengths # TODO: is this actually needed?
-# i, j:
-# TODO: specify in many places that what's called AC here are really AC-prime moves.
-# TODO: change lengths to word_lengths everywhere.
-# TODO: lengths should probably not be input or outputted into all of the functions anyway.
-# There should be a separate function that computes lengths of words given a presentation.
-# functions: len_words, simplify, full_simplify, is_trivial, trivial_states, concat, conjugate
-# TODO: len_words should just be replaced with np.count_nonzero() everywhere in the codebase.
-# simplify should be called simplify_relator; I don't know if we ever need padded=False so may well remove that
-# also maybe full should be called 'cyclic' or something like that.
-
-# TODO: there should be tests for simplify, full_simplify, is_trivial, trivial_states, concat and conjugate.
-# TODO: fix indentation. Why is it half as usual here?
-# computes number of nonzero elements of a Numpy array
-# TODO: max_relator_length should be needed only in conjugate and concat, I think.
-# TODO: lengths_of_words should not be given as a parameter anywhere. We should just compute length of word when we need to.
-# Perhaps there can be a separate function for that.
