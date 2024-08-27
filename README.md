@@ -19,13 +19,20 @@
 - [Contributing](#contributing)
 - [Contact info](#contact-info)
 - [Citation](#citation)
-- [License](#license)
+- [Acknowledgments](#acknowledgments)
 
 
 
 ## Overview
 
 This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."* It includes an implementation of the Andrews-Curtis (AC) Environment in Gymnasium, two classical search algorithms (BFS and Greedy Search), and a PPO agent that works within this environment. Additionally, the repository contains Jupyter notebooks for reproducing the analyses and figures presented in the paper.
+
+## Abstract and paper
+
+Using a long-standing conjecture from combinatorial group theory, we explore, from multiple angles, the challenges of finding rare instances carrying disproportionately high rewards. Based on lessons learned in the mathematical context defined by the Andrews--Curtis conjecture, we propose algorithmic improvements that can be relevant in other domains with ultra-sparse reward problems. Although our case study can be formulated as a game, its shortest winning sequences are potentially $10^6$ or $10^9$ times longer than those encountered in chess. In the process of our study, we demonstrate that one of the potential counterexamples due to Akbulut and Kirby, whose status escaped direct mathematical methods for 39 years, is stably AC-trivial.
+
+[Read full paper on arxiv](https://arxiv.org/)
+[TODO: add link to arxiv]
 
 ## Andrews-Curtis Conjecture
 Andrews-Curtis conjecture is a long-standing open problem in combinatorial group theory and low-dimensional topology. It states that every balanced presentation of the trivial group could be transformed into the trivial presentation using actions on relators: inverses, conjugation and concatenation. More precisely, given presentation of trivial group of form $<x_{1}, x_{2}, \ldots, x_{n} | r_{1}, r_{2}, \ldots, r_{n}>$ can be transformed into $<x_{1}, x_{2}, \ldots, x_{n} |x_{1}, x_{2}, \ldots, x_{n}>$ using following set of moves:
@@ -34,13 +41,6 @@ Andrews-Curtis conjecture is a long-standing open problem in combinatorial group
 - concatenation: changing some $r_{i}$ with $r_{i}r_{j}$.
 
 While many counterexamples to this conjecture were proposed over the years, finding trivializing sequences is notoriously hard. Many aspects of this math problem make it a perfect setup for studying how Reinforcement Learning can identify rare and long sequences of moves that close the desired goal.
-
-## Abstract and paper
-
-Using a long-standing conjecture from combinatorial group theory, we explore, from multiple angles, the challenges of finding rare instances carrying disproportionately high rewards. Based on lessons learned in the mathematical context defined by the Andrews--Curtis conjecture, we propose algorithmic improvements that can be relevant in other domains with ultra-sparse reward problems. Although our case study can be formulated as a game, its shortest winning sequences are potentially $10^6$ or $10^9$ times longer than those encountered in chess. In the process of our study, we demonstrate that one of the potential counterexamples due to Akbulut and Kirby, whose status escaped direct mathematical methods for 39 years, is stably AC-trivial.
-
-[Read full paper on arxiv](https://arxiv.org/)
-[TODO: add link to arxiv]
 
 ## Installation
 
@@ -164,6 +164,6 @@ Contributions to this project are welcome! If you'd like to contribute, please f
 }
 ```
 [TODO]
-## License
+## Acknowledgments
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE.md) file for details.
+This project’s PPO implementation is based on the [CleanRL](https://github.com/vwxyzjn/cleanrl) library.
