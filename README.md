@@ -14,7 +14,7 @@
 
 ## Overview
 
-This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning Agents: A Case Study."* It includes an implementation of the AC Environment in Gymnasium, two classical search algorithms (BFS and Greedy Search), and a PPO agent that works within this environment. Additionally, the repository contains Jupyter notebooks for reproducing the analyses and figures presented in the paper.
+This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."* It includes an implementation of the AC Environment in Gymnasium, two classical search algorithms (BFS and Greedy Search), and a PPO agent that works within this environment. Additionally, the repository contains Jupyter notebooks for reproducing the analyses and figures presented in the paper.
 
 ## Installation
 

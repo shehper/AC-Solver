@@ -1,3 +1,7 @@
+"""
+This file contains Agent class that implements actor and critic networks.
+"""
+
 import numpy as np
 import torch
 from torch.distributions import Categorical

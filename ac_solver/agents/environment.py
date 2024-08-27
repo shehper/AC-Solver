@@ -1,3 +1,9 @@
+"""
+This file contains helper functions to wrap AC Environment with Gymnasium wrappers.
+`make_env` function wraps ACEnv in NormalizeReward and TransformReward Gymnasium Wrappers if needed.
+`get_env` creates multiple parallel actors using Gymnasium SyncVectorEnv wrapper.
+"""
+
 import numpy as np
 import gymnasium as gym
 from ac_solver.envs.ac_env import ACEnvConfig, ACEnv

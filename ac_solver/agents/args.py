@@ -1,3 +1,7 @@
+"""
+`parse_args` function contains all of the arguments that a user may give through command line.
+"""
+
 import argparse
 from distutils.util import strtobool
 from os.path import basename
@@ -138,7 +142,7 @@ def parse_args():
     parser.add_argument(
         "--total-timesteps",
         type=int,
-        default=int(1.1e9),
+        default=200000,
         help="total timesteps of the experiments",
     )
     parser.add_argument(
