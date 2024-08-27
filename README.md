@@ -70,33 +70,59 @@ After installation, you can start using the environment and agents as follows:
 
 ### Initializing the AC Environment
 
-```python
-from ac_solver.envs.ac_env import ACEnv
-acenv = ACEnv()
-```
+The `ACEnv` class is initialized using the `ACEnvConfig` class. By default, `ACEnv()` initializes the environment with the trivial presentation `<x, y>`, represented in code as `[1, 0, 2, 0]`.
 
-<!-- By default, this initializes AC Environment with the following presentation from Akbulut-Kirby series, 
+If you want to specify your own presentation, you can do so using a list. For example, to initialize the environment with the simplest presentation from the Akbulut-Kirby series, `<x^2 = y^3, xyx = y xy>`, you can follow these steps:
 
-$$
-\langle x, y | x^2 = y^3 , x y x = y x y \rangle
-$$ -->
+0. Import the classes. 
+   ```python
+   from ac_solver import ACEnvConfig, ACEnv
+   ```
+
+1. Define the presentation as a list:
+   ```python
+   presentation = [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
+   ```
+
+2. Initialize the `ACEnvConfig` with this presentation:
+   ```python
+   config = ACEnvConfig(initial_state=presentation)
+   ```
+
+3. Create the environment with the custom configuration:
+   ```python
+   env = ACEnv(config)
+   ```
+
+This allows you to explore different presentations within the AC Environment.
 
 ### Performing Classical Search
 
-Specify a presentation and perform greedy search:
+To perform greedy search in the neighborhood of a specified presentation, do:
 
 ```python
-presentation = [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
-from ac_solver.search.greedy import greedy_search
+from ac_solver import greedy_search
 greedy_search(presentation)
 ```
 
-### Solving the Environment with PPO
+Similarly, for breadth-first-search:
 
 ```python
-from ac_solver.agents.ppo import train_ppo
-train_ppo()
+from ac_solver import bfs
+bfs(presentation)
 ```
+
+You can specify the number of nodes to explore through `max_nodes_to_explore` argument of these functions. By default, search is done over 10000 nodes. If the search is successful in reaching a trivial state, a path of AC moves is returned to the user.
+
+### Solving the Environment with PPO
+
+To train a PPO agent on the AC environment, run the following command in your terminal:
+
+```bash
+python ac_solver/agents/ppo.py
+```
+
+By default, this command trains the PPO agent on an AC graph with initial states drawn from approximately 1200 presentations of the Miller-Schupp series, as listed in [this file](ac_solver/search/miller_schupp/data/all_presentations.txt). You can customize your run by passing any hyperparameters listed in [args.py](ac_solver/agents/args.py) via the command line.
 
 ## Notebooks
 
