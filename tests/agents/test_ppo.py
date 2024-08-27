@@ -13,6 +13,7 @@ from ac_env_solver.agents.training import get_curr_lr
 from ac_env_solver.agents.environment import make_env
 from ac_env_solver.envs.utils import convert_relators_to_presentation
 
+
 # Sample input data for testing
 @pytest.fixture
 def sample_args():

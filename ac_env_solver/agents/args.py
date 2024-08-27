@@ -94,7 +94,8 @@ def parse_args():
         help="second relator of the initial presentation (default: AK(2)).",
     )
     parser.add_argument(
-        "--max-env-steps",
+        "--horizon-length",
+        # in previous runs, this used to be called `max-env-steps`.
         type=int,
         default=2000,
         help="number of environment steps after which a rollout is truncated.",

@@ -10,6 +10,7 @@ import numpy as np
 import torch
 from torch import nn
 
+
 def get_curr_lr(n_update, lr_decay, warmup, max_lr, min_lr, total_updates):
     """
     Calculates the current learning rate based on the update step, learning rate decay schedule,
@@ -58,6 +59,7 @@ def get_curr_lr(n_update, lr_decay, warmup, max_lr, min_lr, total_updates):
             )
 
     return lrnow
+
 
 def ppo_training_loop(
     envs,
@@ -226,7 +228,7 @@ def ppo_training_loop(
         ):  # if not normalizing rewards through a NormalizeRewards Wrapper, rescale rewards manually.
             rewards /= envs.envs[0].max_reward
             normalized_returns = np.array(returns_queue) / envs.envs[0].max_reward
-            normalized_lengths = np.array(lengths_queue) / args.max_env_steps
+            normalized_lengths = np.array(lengths_queue) / args.horizon_length
         else:
             normalized_returns = np.array(returns_queue)
             normalized_lengths = np.array(lengths_queue)

@@ -16,7 +16,7 @@ def make_env(presentation, args):
 
     Parameters:
     presentation (list): The initial presentation configuration for the environment.
-    args (Namespace): A set of arguments containing the environment parameters such as max_relator_length, max_env_steps,
+    args (Namespace): A set of arguments containing the environment parameters such as max_relator_length, horizon_length,
                       use_supermoves, norm_rewards, gamma, clip_rewards, min_rew, and max_rew.
 
     Returns:
@@ -28,7 +28,7 @@ def make_env(presentation, args):
         env_config_dict = {
             "init_presentation": presentation,
             "max_relator_length": args.max_relator_length,
-            "max_count_steps": args.max_env_steps,
+            "horizon_length": args.horizon_length,
             "use_supermoves": args.use_supermoves,
         }
 

@@ -6,6 +6,7 @@ This file contains some helper functions for PPO agents.
 from importlib import resources
 from ast import literal_eval
 
+
 def load_initial_states_from_text_file(states_type):
     """
     Loads initial presentations from a text file based on the specified state type. The presentations

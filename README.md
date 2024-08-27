@@ -53,7 +53,6 @@ After installation, you can start using the environment and agents as follows:
 
 ```python
 from ac_env_solver.envs.ac_env import ACEnv
-
 acenv = ACEnv()
 ```
 
@@ -69,9 +68,7 @@ Specify a presentation and perform greedy search:
 
 ```python
 presentation = [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
-
 from ac_env_solver.search.greedy import greedy_search
-
 greedy_search(presentation)
 ```
 
@@ -79,7 +76,6 @@ greedy_search(presentation)
 
 ```python
 from ac_env_solver.agents.ppo import train_ppo
-
 train_ppo()
 ```
 

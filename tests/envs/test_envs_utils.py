@@ -1,6 +1,7 @@
 import numpy as np
 from ac_env_solver.envs.utils import convert_relators_to_presentation
 
+
 # Test convert_relators_to_presentation function
 def test_convert_relators_to_presentation():
     rel1 = [1, 1, -2, -2, -2]
