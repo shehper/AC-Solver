@@ -17,6 +17,8 @@
 - [Andrews-Curtis Conjecture](#Andrews-Curtis-Conjecture)
 - [Abstract and paper](#abstract-and-paper)
 - [Installation](#installation)
+   - [Option A: I wish to build on AC environment](#option-a-i-wish-to-build-on-ac-environment)
+   - [Option B: I wish to reproduce the analyses in the paper](#option-b-i-wish-to-reproduce-the-analyses-in-the-paper)
 - [Usage](#usage)
   - [Initializing the AC Environment](#initializing-the-ac-environment)
   - [Solving the Environment with PPO](#solving-the-environment-with-ppo)
@@ -30,9 +32,18 @@
 
 ## Overview
 
-This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."* It includes an implementation of the Andrews-Curtis (AC) Environment in Gymnasium, two classical search algorithms (BFS and Greedy Search), and a PPO agent that works within this environment. Additionally, the repository contains Jupyter notebooks for reproducing the analyses and figures presented in the paper.
+This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."* It introduces the ``Andrews-Curtis (AC) Environment" --- a reinforcement learning environment, which has the following unique blend of properties we consider useful for pushing the frontiers of reinforcement learning research.
 
-## Abstract and paper
+- sparse rewards,
+- easy control over horizon length,
+- a wide distribution of complexities of initial states, and
+- (extremely) low computational cost of running the environment.
+
+A bonus of working with this environment is that solving hard episode amounts to solving math problems that have been open to humans for decades! 
+
+Using this environment, we proposed algorithmic changes to the current suite of reinforcement-learning algorithms, equipping them with capabilities of dynamically ``learninging how to learn". For more details, see our [paper](https://arxiv.org/), and for a gentle introduction to Andrews-Curtis conjecture and its environment, see [What is Andrews-Curtis conjecture?]
+
+<!-- ## Abstract and paper
 
 Using a long-standing conjecture from combinatorial group theory, we explore, from multiple angles, the challenges of finding rare instances carrying disproportionately high rewards. Based on lessons learned in the mathematical context defined by the Andrews--Curtis conjecture, we propose algorithmic improvements that can be relevant in other domains with ultra-sparse reward problems. Although our case study can be formulated as a game, its shortest winning sequences are potentially $10^6$ or $10^9$ times longer than those encountered in chess. In the process of our study, we demonstrate that one of the potential counterexamples due to Akbulut and Kirby, whose status escaped direct mathematical methods for 39 years, is stably AC-trivial.
 
@@ -45,16 +56,20 @@ Andrews-Curtis conjecture is a long-standing open problem in combinatorial group
 - conjugation: changing some $r_{i}$ with $qr_{i}q^{-1}$ for some $q$,
 - concatenation: changing some $r_{i}$ with $r_{i}r_{j}$.
 
-While many counterexamples to this conjecture were proposed over the years, finding trivializing sequences is notoriously hard. Many aspects of this math problem make it a perfect setup for studying how Reinforcement Learning can identify rare and long sequences of moves that close the desired goal.
+While many counterexamples to this conjecture were proposed over the years, finding trivializing sequences is notoriously hard. Many aspects of this math problem make it a perfect setup for studying how Reinforcement Learning can identify rare and long sequences of moves that close the desired goal. -->
 
 ## Installation
 
+### Option A: I wish to build on AC environment
 To work with the AC Environment or build upon it, you can simply install the package using pip:
 
 ```bash
 pip install ac_solver
 ```
 
+Then follow the steps in the Usage section below.
+
+### Option B: I wish to reproduce the analyses in the paper
 If you wish to reproduce the plots and analyses in the paper, you will need to clone the repository locally. Here is the recommended process:
 
 1. Clone the repository:
@@ -130,9 +145,9 @@ To train a PPO agent on the AC environment, run the following command in your te
 python ac_solver/agents/ppo.py
 ```
 
-By default, this command trains the PPO agent on an AC graph with initial states drawn from approximately 1200 presentations of the Miller-Schupp series, as listed in [this file](ac_solver/search/miller_schupp/data/all_presentations.txt). You can customize your run by passing any hyperparameters listed in [args.py](ac_solver/agents/args.py) via the command line.
+By default, this command trains the PPO agent with initial states drawn from approximately 1200 presentations of the Miller-Schupp series, as listed in [this file](ac_solver/search/miller_schupp/data/all_presentations.txt). You can customize your run by passing any hyperparameters listed in [args.py](ac_solver/agents/args.py) via the command line.
 
-## Notebooks
+## Experiments and Analysis
 
 The `notebooks/` directory contains Jupyter notebooks that reproduce the figures and results discussed in the paper:
 
