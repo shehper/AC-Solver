@@ -7,8 +7,8 @@
     <td><img src="assets/image2.png" alt="Image 3" width="500"/></td>
   </tr>
   <tr>
-    <td align="center">A state has to become much more complex before it is solved.</td>
-    <td align="center">Path length distribution of solution for different initial states.</td>
+    <td align="center">A state might have to become much more complex before it is solved.</td>
+    <td align="center">Path length distribution of solutions for different initial states.</td>
     <td align="center">Number of environment interactions scales approximately linearly with horizon length.</td>
   </tr>
 </table>
@@ -23,8 +23,8 @@
   - [Performing Classical Search](#performing-classical-search)
 - [Notebooks](#notebooks)
 - [Contributing](#contributing)
-- [Citation](#citation)
 - [Acknowledgments](#acknowledgments)
+- [Citation](#citation)
 
 
 
@@ -144,18 +144,11 @@ To run these notebooks, you must clone the repository locally as described above
 
 ## Contributing
 
-Contributions to this project are welcome! If you'd like to contribute, please follow these steps:
+Contributions to this project are welcome! If you'd like to contribute, please follow the steps listed in [Contributions](Contributions.md).
 
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix.
-3. Run tests with `pytest` and ensure your code is formatted with `black`:
+## Acknowledgments
 
-   ```bash
-   poetry run pytest
-   poetry run black .
-   ```
-
-4. Submit a pull request with a clear description of your changes.
+This project’s PPO implementation is based on the [CleanRL](https://github.com/vwxyzjn/cleanrl) library.
 
 ## Citation
 ```python
@@ -163,6 +156,4 @@ Contributions to this project are welcome! If you'd like to contribute, please f
 }
 ```
 [TODO]
-## Acknowledgments
 
-This project’s PPO implementation is based on the [CleanRL](https://github.com/vwxyzjn/cleanrl) library.
