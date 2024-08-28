@@ -16,12 +16,12 @@
 - [Overview](#overview)
 - [Usage](#usage)
    - [Option A: I wish to build on AC environment](#option-a-i-wish-to-build-on-ac-environment)
-     - [Initializing the AC Environment](#initializing-the-ac-environment)
+     - [Initializing the environment](#initializing-the-environment)
       - [Performing Classical Search](#performing-classical-search)
       - [Solving the Environment with PPO](#solving-the-environment-with-ppo)
    - [Option B: I wish to reproduce or extend the analyses in the paper](#option-b-i-wish-to-reproduce-or-extend-the-analyses-in-the-paper)
-   - [Experiments](#experiments)
-   - [Analysis](#analysis)
+      - [Experiments](#experiments)
+      - [Analysis](#analysis)
 - [Contributing](#contributing)
 - [Acknowledgments](#acknowledgments)
 - [Citation](#citation)
@@ -52,51 +52,43 @@ pip install ac_solver
 
 This package comes equipped with two classical search algorithms (greedy search and breadth-first-search) as well as an implementation of Proximal Policy Optimization (PPO). After installation, you can start using the environment and agents as follows:
 
-### Initializing the AC Environment
+### Initializing the environment
 
 The `ACEnv` class is initialized using the `ACEnvConfig` class. By default, `ACEnv()` initializes the environment with the trivial presentation $\langle x, y | x, y \rangle$, represented in code as `[1, 0, 2, 0]`.
 
 If you want to specify your own presentation, you can do so using a list. For example, to initialize the environment with the presentation, $\langle x, y | x^2 = y^3, xyx = yxy \rangle$, you can follow these steps:
 
-0. Import the classes. 
-   ```python
-   from ac_solver import ACEnvConfig, ACEnv
-   ```
+```python
+# 0. Import the classes.
+from ac_solver import ACEnvConfig, ACEnv
 
-1. Define the presentation as a list:
-   ```python
-   presentation = [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
-   ```
+# 1. Define the presentation as a list:
+presentation = [1, 1, -2, -2, -2, 0, 0, 1, 2, 1, -2, -1, -2, 0]
 
-2. Initialize the `ACEnvConfig` with this presentation:
-   ```python
-   config = ACEnvConfig(initial_state=presentation)
-   ```
+# 2. Initialize the ACEnvConfig with this presentation:
+config = ACEnvConfig(initial_state=presentation)
 
-3. Create the environment with the custom configuration:
-   ```python
-   env = ACEnv(config)
-   ```
+# 3. Create the environment with the custom configuration:
+env = ACEnv(config)
+```
 
 This allows you to set different initial states of the AC Environment.
 
 ### Performing Classical Search
 
-To perform greedy search in the neighborhood of a specified presentation, do:
+To perform greedy or breadth-first search in the neighborhood of a specified presentation, do:
 
 ```python
+# greedy
 from ac_solver import greedy_search
 greedy_search(presentation)
-```
 
-Similarly, for breadth-first-search:
-
-```python
+# or bfs
 from ac_solver import bfs
 bfs(presentation)
 ```
 
-You can specify the number of nodes to explore through `max_nodes_to_explore` argument of these functions. By default, search is done over 10000 nodes. If the search is successful in reaching a trivial state, a path of AC moves is returned to the user.
+You may specify the number of nodes by passing `max_nodes_to_explore` argument to these functions. By default, search is done over 10000 nodes. If the search is successful in reaching a trivial state, a path of AC moves is returned to the user.
 
 ### Solving the Environment with PPO
 
@@ -106,7 +98,7 @@ To train a PPO agent on the AC environment, run the following command in your te
 python ac_solver/agents/ppo.py
 ```
 
-By default, this command trains the PPO agent with initial states drawn from approximately 1200 presentations of the Miller-Schupp series, as listed in [this file](ac_solver/search/miller_schupp/data/all_presentations.txt). You can customize your run by passing any hyperparameters listed in [args.py](ac_solver/agents/args.py) via the command line.
+By default, this command trains the PPO agent with initial states drawn from approximately 1200 presentations listed in [this file](ac_solver/search/miller_schupp/data/all_presentations.txt). You can customize your run by passing any hyperparameters listed in [args.py](ac_solver/agents/args.py) via the command line.
 
 <!-- ### Solving AC Environment using Stable Baselines or RLLib
 
@@ -144,7 +136,7 @@ Analyses on epxerimental results may be performed using Jupyter Notebooks in the
 
 - [**`Classical-Search-and-PPO-in-AC-Environment.ipynb`**](./notebooks/Classical-Search-and-PPO-in-AC-Environment.ipynb): To perform various analyses on the performance of classical search and PPO in AC environment. It shows, for example, that longer presentations are harder to solve for all of these algorithms.
 - [**`Scaling-PPO-in-AC-Environment.ipynb`**](./notebooks/Scaling-PPO-in-AC-Environment.ipynb): To study effects of scaling environment interactions and horizon length on agent performance. 
-- **`Stable-AK3.ipynb`**: To demonstrate that a ~4-decades old open potential counterexample, AK(3), is a stably AC-trivial presentation. 
+- [**`Stable-AK3.ipynb`**](./notebooks/Stable-AK3.ipynb): To demonstrate that a ~4-decades old open potential counterexample, AK(3), is a stably AC-trivial presentation. 
 
 ## Contributing
 
