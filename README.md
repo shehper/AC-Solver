@@ -2,8 +2,14 @@
 
 <table>
   <tr>
-    <td><img src="assets/image3.png" alt="Image 1" width="800"/></td>
-    <!-- <td><img src="assets/image2.png" alt="Image 2" width="800"/></td> -->
+    <td><img src="assets/image1.png" alt="Image 1" width="500"/></td>
+    <td><img src="assets/image3.png" alt="Image 2" width="500"/></td>
+    <td><img src="assets/image2.png" alt="Image 3" width="500"/></td>
+  </tr>
+  <tr>
+    <td align="center">A state has to become much more complex before it is solved.</td>
+    <td align="center">Path length distribution of solution for different initial states.</td>
+    <td align="center">Number of environment interactions scales approximately linearly with horizon length.</td>
   </tr>
 </table>
 
