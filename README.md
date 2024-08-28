@@ -14,16 +14,14 @@
 </table>
 
 - [Overview](#overview)
-- [Andrews-Curtis Conjecture](#Andrews-Curtis-Conjecture)
-- [Abstract and paper](#abstract-and-paper)
-- [Installation](#installation)
-   - [Option A: I wish to build on AC environment](#option-a-i-wish-to-build-on-ac-environment)
-   - [Option B: I wish to reproduce the analyses in the paper](#option-b-i-wish-to-reproduce-the-analyses-in-the-paper)
 - [Usage](#usage)
-  - [Initializing the AC Environment](#initializing-the-ac-environment)
-  - [Solving the Environment with PPO](#solving-the-environment-with-ppo)
-  - [Performing Classical Search](#performing-classical-search)
-- [Notebooks](#notebooks)
+   - [Option A: I wish to build on AC environment](#option-a-i-wish-to-build-on-ac-environment)
+     - [Initializing the AC Environment](#initializing-the-ac-environment)
+      - [Performing Classical Search](#performing-classical-search)
+      - [Solving the Environment with PPO](#solving-the-environment-with-ppo)
+   - [Option B: I wish to reproduce or extend the analyses in the paper](#option-b-i-wish-to-reproduce-or-extend-the-analyses-in-the-paper)
+   - [Experiments](#experiments)
+   - [Analysis](#analysis)
 - [Contributing](#contributing)
 - [Acknowledgments](#acknowledgments)
 - [Citation](#citation)
@@ -32,33 +30,18 @@
 
 ## Overview
 
-This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."* It introduces the ``Andrews-Curtis (AC) Environment" --- a reinforcement learning environment, which has the following unique blend of properties we consider useful for pushing the frontiers of reinforcement learning research.
+This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."* It introduces the "Andrews-Curtis (AC) Environment" --- a reinforcement learning environment which has the following unique blend of properties that we consider essential for pushing the frontiers of reinforcement learning research:
 
 - sparse rewards,
 - easy control over horizon length,
 - a wide distribution of complexities of initial states, and
 - (extremely) low computational cost of running the environment.
 
-A bonus of working with this environment is that solving hard episode amounts to solving math problems that have been open to humans for decades! 
+A bonus of working with this environment is that solving hard episodes amounts to solving math problems that have been open to humans for decades! 
 
 Using this environment, we proposed algorithmic changes to the current suite of reinforcement-learning algorithms, equipping them with capabilities of dynamically ``learninging how to learn". For more details, see our [paper](https://arxiv.org/), and for a gentle introduction to Andrews-Curtis conjecture and its environment, see [What is Andrews-Curtis conjecture?]
 
-<!-- ## Abstract and paper
-
-Using a long-standing conjecture from combinatorial group theory, we explore, from multiple angles, the challenges of finding rare instances carrying disproportionately high rewards. Based on lessons learned in the mathematical context defined by the Andrews--Curtis conjecture, we propose algorithmic improvements that can be relevant in other domains with ultra-sparse reward problems. Although our case study can be formulated as a game, its shortest winning sequences are potentially $10^6$ or $10^9$ times longer than those encountered in chess. In the process of our study, we demonstrate that one of the potential counterexamples due to Akbulut and Kirby, whose status escaped direct mathematical methods for 39 years, is stably AC-trivial.
-
-[Read full paper on arxiv](https://arxiv.org/)
-[TODO: add link to arxiv]
-
-## Andrews-Curtis Conjecture
-Andrews-Curtis conjecture is a long-standing open problem in combinatorial group theory and low-dimensional topology. It states that every balanced presentation of the trivial group could be transformed into the trivial presentation using actions on relators: inverses, conjugation and concatenation. More precisely, given presentation of trivial group of form $\langle x_{1}, x_{2}, \ldots, x_{n} | r_{1}, r_{2}, \ldots, r_{n} \rangle$ can be transformed into $\langle x_{1}, x_{2}, \ldots, x_{n} |x_{1}, x_{2}, \ldots, x_{n} \rangle$ using following set of moves:
-- inverse: changing some $r_{i}$ with $r_{i}^{-1}$,
-- conjugation: changing some $r_{i}$ with $qr_{i}q^{-1}$ for some $q$,
-- concatenation: changing some $r_{i}$ with $r_{i}r_{j}$.
-
-While many counterexamples to this conjecture were proposed over the years, finding trivializing sequences is notoriously hard. Many aspects of this math problem make it a perfect setup for studying how Reinforcement Learning can identify rare and long sequences of moves that close the desired goal. -->
-
-## Installation
+## Usage
 
 ### Option A: I wish to build on AC environment
 To work with the AC Environment or build upon it, you can simply install the package using pip:
@@ -67,35 +50,13 @@ To work with the AC Environment or build upon it, you can simply install the pac
 pip install ac_solver
 ```
 
-Then follow the steps in the Usage section below.
-
-### Option B: I wish to reproduce the analyses in the paper
-If you wish to reproduce the plots and analyses in the paper, you will need to clone the repository locally. Here is the recommended process:
-
-1. Clone the repository:
-
-   ```bash
-   git clone https://github.com/shehper/AC-Solver.git
-   cd AC-Solver
-   ```
-
-2. Make a virtual environment and install the package locally using pip:
-
-   ```bash
-   python -m venv ./env
-   source ./env/bin/activate
-   pip install .
-   ```
-
-## Usage
-
-After installation, you can start using the environment and agents as follows:
+This package comes equipped with two classical search algorithms (greedy search and breadth-first-search) as well as an implementation of Proximal Policy Optimization (PPO). After installation, you can start using the environment and agents as follows:
 
 ### Initializing the AC Environment
 
 The `ACEnv` class is initialized using the `ACEnvConfig` class. By default, `ACEnv()` initializes the environment with the trivial presentation $\langle x, y | x, y \rangle$, represented in code as `[1, 0, 2, 0]`.
 
-If you want to specify your own presentation, you can do so using a list. For example, to initialize the environment with the simplest presentation from the Akbulut-Kirby series, $\langle x, y | x^2 = y^3, xyx = yxy \rangle$, you can follow these steps:
+If you want to specify your own presentation, you can do so using a list. For example, to initialize the environment with the presentation, $\langle x, y | x^2 = y^3, xyx = yxy \rangle$, you can follow these steps:
 
 0. Import the classes. 
    ```python
@@ -117,7 +78,7 @@ If you want to specify your own presentation, you can do so using a list. For ex
    env = ACEnv(config)
    ```
 
-This allows you to explore different presentations within the AC Environment.
+This allows you to set different initial states of the AC Environment.
 
 ### Performing Classical Search
 
@@ -147,15 +108,43 @@ python ac_solver/agents/ppo.py
 
 By default, this command trains the PPO agent with initial states drawn from approximately 1200 presentations of the Miller-Schupp series, as listed in [this file](ac_solver/search/miller_schupp/data/all_presentations.txt). You can customize your run by passing any hyperparameters listed in [args.py](ac_solver/agents/args.py) via the command line.
 
-## Experiments and Analysis
+<!-- ### Solving AC Environment using Stable Baselines or RLLib
 
-The `notebooks/` directory contains Jupyter notebooks that reproduce the figures and results discussed in the paper:
+[TODO] Include here info on how to train our environment with stable baselines or rllib.-->
 
-- **`Classical-Search-and-PPO-in-AC-Environment.ipynb`**: Reproduces figures in Sections 1, 3, and 4 of the paper.
-- **`Scaling-PPO-in-AC-Environment.ipynb`**: Reproduces figures in Section 5 of the paper.
-- **`Stable-AK3.ipynb`**: Provides code demonstrating that AK(3) is a stably AC-trivial presentation, a major result of the paper.
+### Option B: I wish to reproduce or extend the analyses in the paper
+If you wish to reproduce the plots and analyses in the paper, you will need to clone the repository locally. Here is the recommended process:
 
-To run these notebooks, you must clone the repository locally as described above.
+1. Clone the repository:
+
+   ```bash
+   git clone https://github.com/shehper/AC-Solver.git
+   cd AC-Solver
+   ```
+
+2. Make a virtual environment and install the package locally using pip:
+
+   ```bash
+   python -m venv ./env
+   source ./env/bin/activate
+   pip install .
+   ```
+
+The repository comes with code for performing barcode analysis on AC graph as well as notebooks to perform various analyses on experimental results.
+
+#### Experiments
+
+A PPO agent may be trained as simply as by running `python ac_solver/agents/ppo.py`. All agents trained for this paper were logged with Weights & Biases. See the [W&B Project page](https://wandb.ai/shehper/AC-Solver-PPO?nw=nwusershehper) for training runs.
+
+<!-- [TODO]: include how to use the barcode analysis code -->
+
+#### Analysis
+
+Analyses on epxerimental results may be performed using Jupyter Notebooks in the [notebooks](./notebooks) folder. 
+
+- [**`Classical-Search-and-PPO-in-AC-Environment.ipynb`**](./notebooks/Classical-Search-and-PPO-in-AC-Environment.ipynb): To perform various analyses on the performance of classical search and PPO in AC environment. It shows, for example, that longer presentations are harder to solve for all of these algorithms.
+- [**`Scaling-PPO-in-AC-Environment.ipynb`**](./notebooks/Scaling-PPO-in-AC-Environment.ipynb): To study effects of scaling environment interactions and horizon length on agent performance. 
+- **`Stable-AK3.ipynb`**: To demonstrate that a ~4-decades old open potential counterexample, AK(3), is a stably AC-trivial presentation. 
 
 ## Contributing
 
