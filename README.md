@@ -17,7 +17,6 @@
   - [Performing Classical Search](#performing-classical-search)
 - [Notebooks](#notebooks)
 - [Contributing](#contributing)
-- [Contact info](#contact-info)
 - [Citation](#citation)
 - [Acknowledgments](#acknowledgments)
 
@@ -152,8 +151,6 @@ Contributions to this project are welcome! If you'd like to contribute, please f
 
 4. Submit a pull request with a clear description of your changes.
 
-## Contact info
-[TODO]
 ## Citation
 ```python
 @article{
