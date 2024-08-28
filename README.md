@@ -30,16 +30,16 @@
 
 ## Overview
 
-This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."* It introduces the "Andrews-Curtis (AC) Environment" --- a reinforcement learning environment which has the following unique blend of properties that we consider essential for pushing the frontiers of reinforcement learning research:
+This repository accompanies the paper *"What Makes Math Problems Hard for Reinforcement Learning: A Case Study."*  It introduces the “Andrews-Curtis (AC) Environment”—a reinforcement learning environment with a unique blend of features that we consider crucial for advancing reinforcement learning research:
 
-- sparse rewards,
-- easy control over horizon length,
-- a wide distribution of complexities of initial states, and
-- (extremely) low computational cost of running the environment.
+   - Sparse rewards,
+   - Easy control over horizon length,
+   - A wide range of initial state complexities, and
+   - (Extremely) low computational cost to run.
 
-A bonus of working with this environment is that solving hard episodes amounts to solving math problems that have been open to humans for decades! 
+One of the coolest aspects of working with this environment is that solving tough episodes means cracking math problems that have stumped humans for decades!
 
-Using this environment, we proposed algorithmic changes to the current suite of reinforcement-learning algorithms, equipping them with capabilities of dynamically ``learninging how to learn". For more details, see our [paper](https://arxiv.org/), and for a gentle introduction to Andrews-Curtis conjecture and its environment, see [What is Andrews-Curtis conjecture?]
+Using this environment, we proposed new tweaks to the current set of reinforcement learning algorithms, giving them the ability to dynamically “learn how to learn.” For more details, check out our [paper](https://arxiv.org/), and if you want a gentle introduction to the Andrews-Curtis conjecture and its environment, see [What is the Andrews-Curtis conjecture?].
 
 ## Usage
 
@@ -52,7 +52,7 @@ pip install ac_solver
 
 This package comes equipped with two classical search algorithms (greedy search and breadth-first-search) as well as an implementation of Proximal Policy Optimization (PPO). After installation, you can start using the environment and agents as follows:
 
-### Initializing the environment
+#### Initializing the environment
 
 The `ACEnv` class is initialized using the `ACEnvConfig` class. By default, `ACEnv()` initializes the environment with the trivial presentation $\langle x, y | x, y \rangle$, represented in code as `[1, 0, 2, 0]`.
 
@@ -74,7 +74,7 @@ env = ACEnv(config)
 
 This allows you to set different initial states of the AC Environment.
 
-### Performing Classical Search
+#### Performing Classical Search
 
 To perform greedy or breadth-first search in the neighborhood of a specified presentation, do:
 
@@ -90,7 +90,7 @@ bfs(presentation)
 
 You may specify the number of nodes by passing `max_nodes_to_explore` argument to these functions. By default, search is done over 10000 nodes. If the search is successful in reaching a trivial state, a path of AC moves is returned to the user.
 
-### Solving the Environment with PPO
+#### Solving the Environment with PPO
 
 To train a PPO agent on the AC environment, run the following command in your terminal:
 
