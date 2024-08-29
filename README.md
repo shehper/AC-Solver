@@ -9,7 +9,7 @@
   <tr>
     <td align="center">A state might have to become much more complex before it is solved.</td>
     <td align="center">Path length distribution of solutions for different initial states.</td>
-    <td align="center">Number of environment interactions scales approximately linearly with horizon length.</td>
+    <td align="center">Number of environment interactions scales almost linearly with horizon length.</td>
   </tr>
 </table>
 
@@ -39,7 +39,7 @@ This repository accompanies the paper *"What Makes Math Problems Hard for Reinfo
 
 One of the coolest aspects of working with this environment is that solving tough episodes means cracking math problems that have stumped humans for decades!
 
-Using this environment, we proposed new tweaks to the current set of reinforcement learning algorithms, giving them the ability to dynamically “learn how to learn.” For more details, check out our [paper](https://arxiv.org/), and if you want a gentle introduction to the Andrews-Curtis conjecture and its environment, see [What is the Andrews-Curtis conjecture?].
+Using this environment, we proposed new changes to the current set of reinforcement learning algorithms, giving them the ability to dynamically “learn how to learn.” For more details, check out our [paper](https://arxiv.org/), and if you want a gentle introduction to the Andrews-Curtis conjecture and its environment, see [What is AC?](./What_is_AC.md).
 
 ## Usage
 
