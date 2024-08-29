@@ -39,7 +39,7 @@ This repository accompanies the paper *"What Makes Math Problems Hard for Reinfo
 
 One of the coolest aspects of working with this environment is that solving tough episodes means cracking math problems that have stumped humans for decades!
 
-Using this environment, we proposed new changes to the current set of reinforcement learning algorithms, giving them the ability to dynamically “learn how to learn.” For more details, check out our [paper](https://arxiv.org/), and if you want a gentle introduction to the Andrews-Curtis conjecture and its environment, see [What is AC?](./What_is_AC.md).
+Using this environment, we proposed new changes to the current set of reinforcement learning algorithms, giving them the ability to dynamically “learn how to learn.” For more details, check out our [paper](https://arxiv.org/abs/2408.15332), and if you want a gentle introduction to the Andrews-Curtis conjecture and its environment, see [What is AC?](./What_is_AC.md).
 
 ## Usage
 
@@ -147,9 +147,14 @@ Contributions to this project are welcome! If you'd like to contribute, please f
 This project’s PPO implementation is based on the [CleanRL](https://github.com/vwxyzjn/cleanrl) library.
 
 ## Citation
-```python
-@article{
+```
+@misc{shehper2024makesmathproblemshard,
+      title={What makes math problems hard for reinforcement learning: a case study}, 
+      author={Ali Shehper and Anibal M. Medina-Mardones and Bartłomiej Lewandowski and Angus Gruen and Piotr Kucharski and Sergei Gukov},
+      year={2024},
+      eprint={2408.15332},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG},
+      url={https://arxiv.org/abs/2408.15332}, 
 }
 ```
-[TODO]
-
