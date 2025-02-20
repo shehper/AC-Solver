@@ -134,7 +134,7 @@ A PPO agent may be trained as simply as by running `python ac_solver/agents/ppo.
 
 #### Analysis
 
-Analyses on epxerimental results may be performed using Jupyter Notebooks in the [notebooks](./notebooks) folder. 
+Analyses on experimental results may be performed using Jupyter Notebooks in the [notebooks](./notebooks) folder. 
 
 - [**`Classical-Search-and-PPO-in-AC-Environment.ipynb`**](./notebooks/Classical-Search-and-PPO-in-AC-Environment.ipynb): To perform various analyses on the performance of classical search and PPO in AC environment. It shows, for example, that longer presentations are harder to solve for all of these algorithms.
 - [**`Scaling-PPO-in-AC-Environment.ipynb`**](./notebooks/Scaling-PPO-in-AC-Environment.ipynb): To study effects of scaling environment interactions and horizon length on agent performance. 
