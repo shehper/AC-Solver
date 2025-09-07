@@ -4,3 +4,4 @@ dist/
 *.txt
 *.pt
 ac_solver/agents/checkpoints/
+*.pyc

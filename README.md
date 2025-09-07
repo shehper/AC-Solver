@@ -1,5 +1,7 @@
 # AC-Solver
 
+A question that puzzled mathematicians for 39 years [gets resolved](https://arxiv.org/abs/2408.15332).
+
 <table>
   <tr>
     <td><img src="assets/image1.png" alt="Image 1" width="500"/></td>

@@ -184,7 +184,6 @@ def ACMove(move_id, presentation, max_relator_length, lengths, cyclical=True):
     lengths: A list of lengths of words in the presentation.
     cyclical: A bool; whether to cyclically reduce words in the resultant presentation or not.
     """
-
     assert move_id in range(
         0, 12
     ), f"Expect n to be in range 0-11 (both inclusive); got {move_id}"

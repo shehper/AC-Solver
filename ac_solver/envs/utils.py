@@ -8,6 +8,7 @@ ii. zeros in each half of the array are padded to the right end.
 """
 
 import numpy as np
+from collections import deque
 
 
 def is_array_valid_presentation(array):
@@ -241,7 +242,7 @@ def simplify_relator(relator, max_relator_length, cyclical=False, padded=True):
 
 
 def simplify_presentation(
-    presentation, max_relator_length, lengths_of_words, cyclical=True
+    presentation, max_relator_length, lengths_of_words, cyclical=True, use_deque=True
 ):
     """
     Simplifies a presentation by simplifying each of its relators. (See `simplify_relator` for more details.)
@@ -263,14 +264,25 @@ def simplify_presentation(
     ), f"{presentation} is not a valid presentation. Expect all zeros to be padded to the right."
 
     lengths_of_words = lengths_of_words.copy()
-
     for i in range(2):
-        simplified_relator, length_i = simplify_relator(
-            relator=presentation[i * max_relator_length : (i + 1) * max_relator_length],
-            max_relator_length=max_relator_length,
-            cyclical=cyclical,
-            padded=True,
-        )
+        if use_deque:
+            simplified_relator, length_i = simplify_relator_with_deque(
+                relator=presentation[
+                    i * max_relator_length : (i + 1) * max_relator_length
+                ],
+                max_relator_length=max_relator_length,
+                cyclical=cyclical,
+                padded=True,
+            )
+        else:
+            simplified_relator, length_i = simplify_relator(
+                relator=presentation[
+                    i * max_relator_length : (i + 1) * max_relator_length
+                ],
+                max_relator_length=max_relator_length,
+                cyclical=cyclical,
+                padded=True,
+            )
 
         presentation[i * max_relator_length : (i + 1) * max_relator_length] = (
             simplified_relator
@@ -278,3 +290,50 @@ def simplify_presentation(
         lengths_of_words[i] = length_i
 
     return presentation, lengths_of_words
+
+
+def simplify_relator_with_deque(
+    relator, max_relator_length, cyclical=False, padded=True
+):
+    """
+    Simplifies a relator by removing neighboring inverses. For example, if input is x^2 y y^{-1} x, the output will be x^3.
+
+    Parameters:
+    relator (numpy array): An array representing a word of generators.
+                           Expected form is to have non-zero elements to the left and any padded zeros to the right.
+                           For example, [-1, -1, 2, 2, 1, 0, 0] represents the word x^{-2} y^2 x
+    max_relator_length (int): Upper bound on the length of the simplified relator.
+                              If, after simplification, the relator length > max_relator_length, an assertion error is given.
+                              This bound is placed so as to make the search space finite. Say,
+    cyclical (bool): A bool to specify whether to remove inverses on opposite ends of the relator.
+                     For example, when true, the function will reduce x y x^{-1} to y.
+                     This is equivalent to conjugation by a word.
+    padded (bool): A bool to specify whether to pad the output with zeros on the right end.
+                   If True, the output array has length = max_relator_length, with number of padded zeros
+                   equal to the difference of max_relator_length and word length of the simplified relator.
+
+    Returns: (simplified_relator, relator_length)
+    simplified_relator is a Numpy array representing the simplified relator
+    relator_length is the length of simplified word.
+    We can use a double-ended queue to finish this task.
+    """
+    assert isinstance(relator, np.ndarray), "expect relator to be a numpy array"
+    relator_deque = deque()
+    relator_length = np.count_nonzero(relator)
+    relator_padding_length = len(relator)
+    for i in range(relator_length):
+        if relator_deque and relator_deque[-1] + relator[i] == 0:
+            relator_deque.pop()
+        else:
+            relator_deque.append(relator[i])
+    if cyclical:
+        while relator_deque and relator_deque[0] + relator_deque[-1] == 0:
+            relator_deque.popleft()
+            relator_deque.pop()
+    relator = np.array(relator_deque)
+    relator_length = len(relator)
+    if padded:
+        relator = np.pad(relator, (0, max_relator_length - len(relator)))
+    else:
+        relator = np.pad(relator, (0, relator_padding_length - len(relator)))
+    return relator, relator_length
