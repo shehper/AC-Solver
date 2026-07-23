@@ -91,6 +91,7 @@ class ACEnv(Env):
             for i in range(self.n_gen)
         ]  # lengths of relators in the current state
         self.actions = []  # list of actions from the initial state
+        self.supermoves = None  # dict of supermoves when implemented; None for now
 
     def step(self, action):
         self.actions += [action]
